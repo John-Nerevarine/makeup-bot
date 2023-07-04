@@ -36,12 +36,12 @@ randomElementsKeyboard.add(backButton)
 
 # Main Menu Keyboard
 main_menu_buttons = (
-    InlineKeyboardButton('Random element', callback_data='elements'),
-    InlineKeyboardButton('Colour story', callback_data='colour_story'),
-    InlineKeyboardButton('Full random', callback_data='full_random'),
-    InlineKeyboardButton('Show all', callback_data='show'),
-    InlineKeyboardButton('Add makeup', callback_data='add_makeup'),
-    InlineKeyboardButton('Remove makeup', callback_data='remove_makeup'))
+    InlineKeyboardButton('Random Element', callback_data='elements'),
+    InlineKeyboardButton('Colour Story', callback_data='colour_story'),
+    InlineKeyboardButton('Full Random', callback_data='full_random'),
+    InlineKeyboardButton('Show All', callback_data='show'),
+    InlineKeyboardButton('Add Makeup', callback_data='add_makeup'),
+    InlineKeyboardButton('Remove Makeup', callback_data='remove_makeup'))
 
 mMenuKeyboard = InlineKeyboardMarkup()
 for button in main_menu_buttons:

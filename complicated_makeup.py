@@ -15,8 +15,8 @@ async def callback_colour_story(callback_query: types.CallbackQuery,
     await getBackData(state, callback_query.message)
     await bot.answer_callback_query(callback_query.id)
     keyboard = InlineKeyboardMarkup()
-    keyboard.insert(InlineKeyboardButton('Random colour story', callback_data='random'))
-    keyboard.add(InlineKeyboardButton('Choose colour story', callback_data='choose'))
+    keyboard.insert(InlineKeyboardButton('Random Colour Story', callback_data='random'))
+    keyboard.add(InlineKeyboardButton('Choose Colour Story', callback_data='choose'))
     keyboard.add(kb.backButton)
 
     await bot.edit_message_text('<b>Colour story</b>\n',

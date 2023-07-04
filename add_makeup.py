@@ -15,9 +15,9 @@ async def callback_add_makeup(callback_query: types.CallbackQuery,
     await bot.answer_callback_query(callback_query.id)
     keyboard = InlineKeyboardMarkup()
     for mk in MAKEUPS:
-        keyboard.add(InlineKeyboardButton(f'Add {mk}', callback_data=mk))
-    keyboard.add(InlineKeyboardButton('Add colour story', callback_data='colour_story'))
-    keyboard.add(InlineKeyboardButton('Add predefined colour', callback_data='colour'))
+        keyboard.add(InlineKeyboardButton(f'Add {mk.capitalize()}', callback_data=mk))
+    keyboard.add(InlineKeyboardButton('Add Colour Story', callback_data='colour_story'))
+    keyboard.add(InlineKeyboardButton('Add Predefined Colour', callback_data='colour'))
     keyboard.add(kb.backButton)
 
     await bot.edit_message_text('<b>Add makeup</b>',
@@ -101,7 +101,7 @@ async def callback_colour_chosen(callback_query: types.CallbackQuery,
                       f'Colours: <i>{colours_name}</i>'))
 
     keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton('Add more colour', callback_data='add'))
+    keyboard.add(InlineKeyboardButton('Add More Colour', callback_data='add'))
     keyboard.add(kb.confirmButton)
     keyboard.add(kb.cancelButton)
 
@@ -242,7 +242,7 @@ async def callback_confirm_colour_story(callback_query: types.CallbackQuery,
         data['new_colours'] = new_colours
 
     keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton('Add more colour', callback_data='more_colour'))
+    keyboard.add(InlineKeyboardButton('Add More Colour', callback_data='more_colour'))
     keyboard.add(kb.confirmButton)
     keyboard.add(kb.backButton)
 
