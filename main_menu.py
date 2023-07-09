@@ -1,11 +1,11 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-
+from aiogram.types import InlineKeyboardMarkup
 import data_base
 from support import callbackEmergencyStart
 import keyboards as kb
 import datetime
-from create_bot import MainMenu, bot, dp, MAKEUPS, MAIN_MENU_MESSAGE
+from create_bot import MainMenu, ShowAll, bot, dp, MAKEUPS, MAIN_MENU_MESSAGE
 from config import USERS
 
 
@@ -83,7 +83,7 @@ async def callbackGoBack(callback_query: types.CallbackQuery,
         await callbackEmergencyStart(callback_query, state)
 
 
-# ELEMENTS MENU
+# SHOW ALL
 @dp.callback_query_handler(text='show', state=MainMenu.start)
 async def callback_show(callback_query: types.CallbackQuery,
                         state: FSMContext):
@@ -93,14 +93,14 @@ async def callback_show(callback_query: types.CallbackQuery,
     text = '<b>Elements in base:</b>'
     for makeup in MAKEUPS:
         elements = data_base.get_readable_elements(callback_query.from_user.id, makeup)
-        text = '\n\n'.join((text, f'{makeup.capitalize()}{"es" if makeup[-1] == "s" else "s"}:'))
+        text = '\n\n'.join((text, f'### {makeup.capitalize()}{"es" if makeup[-1] == "s" else "s"} ###:'))
         if elements:
             for element in elements:
                 text = '\n'.join((text, f'- "{element[0]}", colours: {element[1]}.'))
         else:
             text = '\n'.join((text, f'- No {makeup} in  database!'))
 
-    text = '\n\n'.join((text, 'Colour stories:'))
+    text = '\n\n'.join((text, '### Colour stories ###:'))
     colour_stories = data_base.get_colour_stories(callback_query.from_user.id)
     if colour_stories:
         for cs in colour_stories:
@@ -108,7 +108,7 @@ async def callback_show(callback_query: types.CallbackQuery,
     else:
         text = '\n'.join((text, f'- No colour stories in database!'))
 
-    text = '\n\n'.join((text, 'Colours:'))
+    text = '\n\n'.join((text, '### Colours ###:'))
     colours = data_base.get_colours(callback_query.from_user.id)
     if colours:
         colours = ', '.join(col[0] for col in colours)
@@ -116,6 +116,90 @@ async def callback_show(callback_query: types.CallbackQuery,
     else:
         text = '\n'.join((text, f'- No colours in database!'))
 
+    show_all_texts = []
+    if len(text) > 4000:
+        while len(text) > 4000:
+            index = text[:4000].rfind('\n')
+            show_all_texts.append(text[:index])
+            text = text[index+1:]
+        else:
+            show_all_texts.append(text)
+        keyboard = InlineKeyboardMarkup()
+        keyboard.insert(kb.nextButton)
+        keyboard.add(kb.backButton)
+    else:
+        show_all_texts.append(text)
+        keyboard = kb.backKeyboard
+
+    async with state.proxy() as data:
+        data['show_all'] = show_all_texts
+        data['show_all_index'] = 0
+
+    await bot.edit_message_text(show_all_texts[0],
+                                callback_query.from_user.id, callback_query.message.message_id,
+                                reply_markup=keyboard)
+
+    await ShowAll.show.set()
+
+# NEXT/PREV
+@dp.callback_query_handler(text='next', state=ShowAll.show)
+async def callback_show(callback_query: types.CallbackQuery,
+                        state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
+
+    async with state.proxy() as data:
+        show_all_texts = data['show_all']
+        show_all_index = data['show_all_index']
+
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(kb.prevButton)
+
+    if len(show_all_texts) > show_all_index + 1:
+        text = show_all_texts[show_all_index + 1]
+        show_all_index += 1
+        if len(show_all_texts) > show_all_index + 1:
+            keyboard.insert(kb.nextButton)
+
+    else:
+        text = 'No next data. It\'s an error. Send nudes to the developer!'
+
+    keyboard.add(kb.backButton)
+
+
+    async with state.proxy() as data:
+        data['show_all_index'] = show_all_index
+
     await bot.edit_message_text(text,
                                 callback_query.from_user.id, callback_query.message.message_id,
-                                reply_markup=kb.backKeyboard)
+                                reply_markup=keyboard)
+
+
+@dp.callback_query_handler(text='prev', state=ShowAll.show)
+async def callback_show(callback_query: types.CallbackQuery,
+                        state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
+
+    async with state.proxy() as data:
+        show_all_texts = data['show_all']
+        show_all_index = data['show_all_index']
+
+    keyboard = InlineKeyboardMarkup()
+
+    if show_all_index - 1 >= 0:
+        text = show_all_texts[show_all_index - 1]
+        show_all_index -= 1
+        if show_all_index - 1 >= 0:
+            keyboard.insert(kb.prevButton)
+
+    else:
+        text = 'No prev data. It\'s an error. Send nudes to the developer!'
+
+    keyboard.add(kb.nextButton)
+    keyboard.add(kb.backButton)
+
+    async with state.proxy() as data:
+        data['show_all_index'] = show_all_index
+
+    await bot.edit_message_text(text,
+                                callback_query.from_user.id, callback_query.message.message_id,
+                                reply_markup=keyboard)

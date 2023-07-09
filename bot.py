@@ -11,9 +11,6 @@ import main_menu, chose_makeup, complicated_makeup, add_makeup, remove_makeup, s
 def on_startup():
     db.sqlStart()
 
-
-Path("users").mkdir(parents=True, exist_ok=True)
-
 # do last
 support.registerHandlers(dp)
 
