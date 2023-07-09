@@ -7,6 +7,8 @@ cancelButton = InlineKeyboardButton('<< Cancel', callback_data='back')
 confirmButton = InlineKeyboardButton('>> Confirm <<', callback_data='confirm')
 mMenuButton = InlineKeyboardButton('<< Main menu >>', callback_data='main_menu')
 gotButton = InlineKeyboardButton('<< Got it! >>', callback_data='back')
+nextButton = InlineKeyboardButton('Next -->>', callback_data='next')
+prevButton = InlineKeyboardButton('<<-- Previous', callback_data='prev')
 
 # Got it! Keyboard
 gotKeyboard = InlineKeyboardMarkup().add(gotButton)

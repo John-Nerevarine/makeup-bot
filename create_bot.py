@@ -47,3 +47,7 @@ class RemoveMakeup(StatesGroup):
 class ColourStory(StatesGroup):
     start = State()
     choose_cs = State()
+
+
+class ShowAll(StatesGroup):
+    show = State()
