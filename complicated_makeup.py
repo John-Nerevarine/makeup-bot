@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 import keyboards as kb
 from main_menu import getBackData
 import data_base
-from create_bot import bot, dp, ColourStory, MainMenu
+from create_bot import bot, dp, ColourStory, MainMenu, MAKEUPS
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from random import choice
 
@@ -38,13 +38,10 @@ async def callback_random_colour_story(callback_query: types.CallbackQuery,
         cs_name = colour_story[0]
         makeup = data_base.get_makeup_from_colour_story(user_id=callback_query.from_user.id,
                                                         colour_story_id=colour_story[1])
+        elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS)
 
         text = '\n'.join((f'Colour story: <i>{cs_name}</i>',
-                          f'Eyeshadow: <b>{makeup["eyeshadow"]}</b>',
-                          f'Eyeliner: <b>{makeup["eyeliner"]}</b>',
-                          f'Lipstick: <b>{makeup["lipstick"]}</b>',
-                          f'Lipliner: <b>{makeup["lipliner"]}</b>',
-                          f'Lipgloss: <b>{makeup["lipgloss"]}</b>',
+                          elements_text,
                           f'Glitter: <b>{"Yes" if makeup["glitter"] else "No"}</b>',
                           ))
 
@@ -92,12 +89,10 @@ async def callback_colour_story_get(callback_query: types.CallbackQuery,
     makeup = data_base.get_makeup_from_colour_story(user_id=callback_query.from_user.id,
                                                     colour_story_id=colour_story_id)
 
+    elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS)
+
     text = '\n'.join((f'Colour story: <i>{cs_name}</i>',
-                      f'Eyeshadow: <b>{makeup["eyeshadow"]}</b>',
-                      f'Eyeliner: <b>{makeup["eyeliner"]}</b>',
-                      f'Lipstick: <b>{makeup["lipstick"]}</b>',
-                      f'Lipliner: <b>{makeup["lipliner"]}</b>',
-                      f'Lipgloss: <b>{makeup["lipgloss"]}</b>',
+                      elements_text,
                       f'Glitter: <b>{"Yes" if makeup["glitter"] else "No"}</b>',
                       ))
 
@@ -113,12 +108,11 @@ async def callback_full_random(callback_query: types.CallbackQuery,
     await getBackData(state, callback_query.message)
     await bot.answer_callback_query(callback_query.id)
     makeup = data_base.get_full_random(callback_query.from_user.id)
+
+    elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS)
+
     text = '\n'.join((f'Full random:',
-                      f'Eyeshadow: <b>{makeup["eyeshadow"]}</b>',
-                      f'Eyeliner: <b>{makeup["eyeliner"]}</b>',
-                      f'Lipstick: <b>{makeup["lipstick"]}</b>',
-                      f'Lipliner: <b>{makeup["lipliner"]}</b>',
-                      f'Lipgloss: <b>{makeup["lipgloss"]}</b>',
+                      elements_text,
                       f'Glitter: <b>{"Yes" if makeup["glitter"] else "No"}</b>',
                       ))
 

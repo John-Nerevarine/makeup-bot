@@ -5,7 +5,7 @@ import data_base
 from support import callbackEmergencyStart
 import keyboards as kb
 import datetime
-from create_bot import MainMenu, ShowAll, bot, dp, MAKEUPS, MAIN_MENU_MESSAGE
+from create_bot import MainMenu, ShowAll, Settings, bot, dp, MAKEUPS, MAIN_MENU_MESSAGE
 from config import USERS
 
 
@@ -84,7 +84,7 @@ async def callbackGoBack(callback_query: types.CallbackQuery,
 
 
 # SHOW ALL
-@dp.callback_query_handler(text='show', state=MainMenu.start)
+@dp.callback_query_handler(text='show', state=Settings.start)
 async def callback_show(callback_query: types.CallbackQuery,
                         state: FSMContext):
     await getBackData(state, callback_query.message)
@@ -121,7 +121,7 @@ async def callback_show(callback_query: types.CallbackQuery,
         while len(text) > 4000:
             index = text[:4000].rfind('\n')
             show_all_texts.append(text[:index])
-            text = text[index+1:]
+            text = text[index + 1:]
         else:
             show_all_texts.append(text)
         keyboard = InlineKeyboardMarkup()
@@ -140,6 +140,7 @@ async def callback_show(callback_query: types.CallbackQuery,
                                 reply_markup=keyboard)
 
     await ShowAll.show.set()
+
 
 # NEXT/PREV
 @dp.callback_query_handler(text='next', state=ShowAll.show)
@@ -164,7 +165,6 @@ async def callback_show(callback_query: types.CallbackQuery,
         text = 'No next data. It\'s an error. Send nudes to the developer!'
 
     keyboard.add(kb.backButton)
-
 
     async with state.proxy() as data:
         data['show_all_index'] = show_all_index
@@ -203,3 +203,18 @@ async def callback_show(callback_query: types.CallbackQuery,
     await bot.edit_message_text(text,
                                 callback_query.from_user.id, callback_query.message.message_id,
                                 reply_markup=keyboard)
+
+
+# SETTINGS
+@dp.callback_query_handler(text='settings', state=MainMenu.start)
+async def callback_settings(callback_query: types.CallbackQuery,
+                            state: FSMContext):
+    await getBackData(state, callback_query.message)
+    await bot.answer_callback_query(callback_query.id)
+
+    text = '<b>Settings:</b>'
+
+    await bot.edit_message_text(text,
+                                callback_query.from_user.id, callback_query.message.message_id,
+                                reply_markup=kb.settingsKeyboard)
+    await Settings.start.set()

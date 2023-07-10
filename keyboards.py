@@ -41,11 +41,21 @@ main_menu_buttons = (
     InlineKeyboardButton('Random Element', callback_data='elements'),
     InlineKeyboardButton('Colour Story', callback_data='colour_story'),
     InlineKeyboardButton('Full Random', callback_data='full_random'),
-    InlineKeyboardButton('Show All', callback_data='show'),
-    InlineKeyboardButton('Add Makeup', callback_data='add_makeup'),
-    InlineKeyboardButton('Remove Makeup', callback_data='remove_makeup'))
+    InlineKeyboardButton('Settings', callback_data='settings'))
 
 mMenuKeyboard = InlineKeyboardMarkup()
 for button in main_menu_buttons:
     mMenuKeyboard.add(button)
 
+#  Settings keyboard
+settings_buttons = (
+    InlineKeyboardButton('Show All', callback_data='show'),
+    InlineKeyboardButton('Find Makeup', callback_data='find'),
+    InlineKeyboardButton('Edit Makeup', callback_data='edit'),
+    InlineKeyboardButton('Add Makeup', callback_data='add_makeup'),
+    InlineKeyboardButton('Remove Makeup', callback_data='remove_makeup'))
+
+settingsKeyboard = InlineKeyboardMarkup()
+for button in settings_buttons:
+    settingsKeyboard.add(button)
+settingsKeyboard.add(backButton)

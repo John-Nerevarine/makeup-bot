@@ -147,6 +147,8 @@ def get_makeup_from_colour_story(user_id, colour_story_id):
     #         'lipstick': 'some lipstick',
     #         'lipliner': 'some lipliner',
     #         'lipgloss': 'some lipgloss',
+    #         'highlighter': 'some ---',
+    #         'blush': 'some ---',
     #         'glitter': True}
 
 

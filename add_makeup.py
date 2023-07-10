@@ -3,12 +3,12 @@ from aiogram.dispatcher import FSMContext
 import keyboards as kb
 from main_menu import getBackData
 import data_base
-from create_bot import bot, dp, MainMenu, AddMakeup, AddColour, MAKEUPS
+from create_bot import bot, dp, MainMenu, AddMakeup, AddColour, Settings, MAKEUPS
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 # ADD MAKEUP
-@dp.callback_query_handler(text='add_makeup', state=MainMenu.start)
+@dp.callback_query_handler(text='add_makeup', state=Settings.start)
 async def callback_add_makeup(callback_query: types.CallbackQuery,
                               state: FSMContext):
     await getBackData(state, callback_query.message)

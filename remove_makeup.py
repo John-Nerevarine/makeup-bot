@@ -3,14 +3,14 @@ from aiogram.dispatcher import FSMContext
 import keyboards as kb
 from main_menu import getBackData
 import data_base
-from create_bot import bot, dp, MainMenu, RemoveMakeup, MAKEUPS
+from create_bot import bot, dp, MainMenu, RemoveMakeup, Settings, MAKEUPS
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 # START REMOVING MAKEUP
-@dp.callback_query_handler(text='remove_makeup', state=MainMenu.start)
+@dp.callback_query_handler(text='remove_makeup', state=Settings.start)
 async def callback_start_removing_makeup(callback_query: types.CallbackQuery,
-                                 state: FSMContext):
+                                         state: FSMContext):
     await getBackData(state, callback_query.message)
     await bot.answer_callback_query(callback_query.id)
     keyboard = InlineKeyboardMarkup()
@@ -56,7 +56,7 @@ async def callback_remove_makeup(callback_query: types.CallbackQuery,
 # REMOVE MAKEUP DONE
 @dp.callback_query_handler(state=RemoveMakeup.makeup)
 async def callback_removed_makeup(callback_query: types.CallbackQuery,
-                                 state: FSMContext):
+                                  state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
 
     cb_data = callback_query.data.split('|')
@@ -70,7 +70,7 @@ async def callback_removed_makeup(callback_query: types.CallbackQuery,
 # REMOVE COLOUR STORY
 @dp.callback_query_handler(text='colour_story', state=RemoveMakeup.start)
 async def callback_remove_colour_story(callback_query: types.CallbackQuery,
-                                 state: FSMContext):
+                                       state: FSMContext):
     await getBackData(state, callback_query.message)
     await bot.answer_callback_query(callback_query.id)
 
@@ -95,7 +95,7 @@ async def callback_remove_colour_story(callback_query: types.CallbackQuery,
 # REMOVE COLOUR STORY DONE
 @dp.callback_query_handler(state=RemoveMakeup.colour_story)
 async def callback_removed_colour_story(callback_query: types.CallbackQuery,
-                                 state: FSMContext):
+                                        state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
 
     cb_data = callback_query.data.split('|')
@@ -115,9 +115,10 @@ async def callback_remove_colour(callback_query: types.CallbackQuery,
 
     colours = data_base.get_colours(callback_query.from_user.id)
     if not colours:
-        await bot.edit_message_text(f'<b>There is no colours  in the data base! Please add any colour from "Add predefined colour"!</b>',
-                                    callback_query.from_user.id, callback_query.message.message_id,
-                                    reply_markup=kb.cancelKeyboard)
+        await bot.edit_message_text(
+            f'<b>There is no colours  in the data base! Please add any colour from "Add predefined colour"!</b>',
+            callback_query.from_user.id, callback_query.message.message_id,
+            reply_markup=kb.cancelKeyboard)
         return
 
     keyboard = InlineKeyboardMarkup()
@@ -135,7 +136,7 @@ async def callback_remove_colour(callback_query: types.CallbackQuery,
 # REMOVE COLOUR STORY DONE
 @dp.callback_query_handler(state=RemoveMakeup.colour)
 async def callback_removed_colour(callback_query: types.CallbackQuery,
-                                 state: FSMContext):
+                                  state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
 
     cb_data = callback_query.data.split('|')

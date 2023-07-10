@@ -8,8 +8,9 @@ storage = MemoryStorage()
 bot = Bot(token=TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot, storage=storage)
 
-MAKEUPS = ('eyeshadow', 'eyeliner', 'lipstick', 'lipliner', 'lipgloss')
+MAKEUPS = ('eyeshadow', 'eyeliner', 'lipstick', 'lipliner', 'lipgloss', 'highlighter', 'blush')
 MAIN_MENU_MESSAGE = '<b>Lizz Makeup Bot</b>\n\n== Main Menu =='
+
 
 class MainMenu(StatesGroup):
     start = State()
@@ -51,3 +52,7 @@ class ColourStory(StatesGroup):
 
 class ShowAll(StatesGroup):
     show = State()
+
+
+class Settings(StatesGroup):
+    start = State()
