@@ -50,9 +50,21 @@ class ColourStory(StatesGroup):
     choose_cs = State()
 
 
-class ShowAll(StatesGroup):
+class Settings(StatesGroup):
+    start = State()
     show = State()
 
 
-class Settings(StatesGroup):
+class Find(StatesGroup):
     start = State()
+    type_name = State()
+    result = State()
+
+
+class Edit(StatesGroup):
+    start = State()
+    chose_makeup = State()
+    name = State()
+    colours = State()
+    type = State()
+    priority = State()

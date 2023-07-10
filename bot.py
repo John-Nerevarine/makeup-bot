@@ -5,7 +5,7 @@ from aiogram.utils import executor
 from create_bot import dp
 from pathlib import Path
 import data_base as db
-import main_menu, chose_makeup, complicated_makeup, add_makeup, remove_makeup, support
+import main_menu, chose_makeup, complicated_makeup, add_makeup, remove_makeup, edit_makeup, find_makeup, support
 
 
 def on_startup():

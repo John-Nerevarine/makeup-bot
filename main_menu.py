@@ -5,7 +5,7 @@ import data_base
 from support import callbackEmergencyStart
 import keyboards as kb
 import datetime
-from create_bot import MainMenu, ShowAll, Settings, bot, dp, MAKEUPS, MAIN_MENU_MESSAGE
+from create_bot import MainMenu, Settings, bot, dp, MAKEUPS, MAIN_MENU_MESSAGE
 from config import USERS
 
 
@@ -139,11 +139,11 @@ async def callback_show(callback_query: types.CallbackQuery,
                                 callback_query.from_user.id, callback_query.message.message_id,
                                 reply_markup=keyboard)
 
-    await ShowAll.show.set()
+    await Settings.show.set()
 
 
 # NEXT/PREV
-@dp.callback_query_handler(text='next', state=ShowAll.show)
+@dp.callback_query_handler(text='next', state=Settings.show)
 async def callback_show(callback_query: types.CallbackQuery,
                         state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
@@ -174,7 +174,7 @@ async def callback_show(callback_query: types.CallbackQuery,
                                 reply_markup=keyboard)
 
 
-@dp.callback_query_handler(text='prev', state=ShowAll.show)
+@dp.callback_query_handler(text='prev', state=Settings.show)
 async def callback_show(callback_query: types.CallbackQuery,
                         state: FSMContext):
     await bot.answer_callback_query(callback_query.id)

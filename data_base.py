@@ -182,9 +182,15 @@ def get_full_random(user_id):
     makeup['glitter'] = bool(randint(0, 1))
     return makeup
 
-    # return {'eyeshadow': 'some eyeshadow',
-    #         'eyeliner': 'some eyeliner',
-    #         'lipstick': 'some lipstick',
-    #         'lipliner': 'some lipliner',
-    #         'lipgloss': 'some lipgloss',
-    #         'glitter': True}
+
+def find(user_id, mk_type, name):
+    cur.execute('SELECT name, id FROM makeup_elements WHERE user_id = ? AND type = ?',
+                (user_id, mk_type))
+    elements = cur.fetchall()
+    result = []
+    for elem in elements:
+        if name in elem[0]:
+            result.append(elem)
+
+    return result
+

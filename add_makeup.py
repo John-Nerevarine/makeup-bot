@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 import keyboards as kb
 from main_menu import getBackData
 import data_base
-from create_bot import bot, dp, MainMenu, AddMakeup, AddColour, Settings, MAKEUPS
+from create_bot import bot, dp, AddMakeup, AddColour, Settings, MAKEUPS
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
