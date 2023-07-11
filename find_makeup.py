@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 import keyboards as kb
 from main_menu import getBackData
 import data_base
-from create_bot import bot, dp, AddMakeup, Find, Edit, Settings, MAKEUPS
+from create_bot import bot, dp, Find, Edit, Settings, MAKEUPS
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
@@ -58,8 +58,7 @@ async def callback_find_result(message: types.Message,
     if result:
         keyboard = InlineKeyboardMarkup()
         for element in result:
-            cb_data = '|'.join((element[0], str(element[1])))
-            keyboard.add(InlineKeyboardButton(element[0], callback_data=cb_data))
+            keyboard.add(InlineKeyboardButton(element[0], callback_data=str(element[1])))
         keyboard.add(kb.backButton)
 
         await bot.delete_message(message.from_user.id, message.message_id)

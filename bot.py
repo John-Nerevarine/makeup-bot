@@ -11,6 +11,7 @@ import main_menu, chose_makeup, complicated_makeup, add_makeup, remove_makeup, e
 def on_startup():
     db.sqlStart()
 
+
 # do last
 support.registerHandlers(dp)
 

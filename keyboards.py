@@ -59,3 +59,15 @@ settingsKeyboard = InlineKeyboardMarkup()
 for button in settings_buttons:
     settingsKeyboard.add(button)
 settingsKeyboard.add(backButton)
+
+# Edit Keyboard
+edit_buttons = (
+    InlineKeyboardButton('Edit Name', callback_data='edit_name'),
+    InlineKeyboardButton('Edit Colours', callback_data='edit_colours'),
+    InlineKeyboardButton('Edit Priority (NOT WORKING)', callback_data='edit_priority'))
+
+editKeyboard = InlineKeyboardMarkup()
+for button in edit_buttons:
+    editKeyboard.add(button)
+editKeyboard.add(backButton)
+editKeyboard.add(mMenuButton)

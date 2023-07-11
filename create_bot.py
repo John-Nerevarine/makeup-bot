@@ -64,7 +64,10 @@ class Find(StatesGroup):
 class Edit(StatesGroup):
     start = State()
     chose_makeup = State()
-    name = State()
+    edit = State()
+    enter_name = State()
     colours = State()
+    confirm_colours = State()
+    additional_colour = State()
     type = State()
     priority = State()

@@ -41,6 +41,22 @@ def get_elements(user_id, element):
     return elements
 
 
+def get_one_element(user_id, element_id):
+    cur.execute('SELECT name, type, colours FROM makeup_elements WHERE user_id = ? AND id = ?', (user_id, element_id))
+    element = cur.fetchone()
+    ret = {'name': element[0],
+           'type': element[1],
+           'id': element_id,
+           'colours': ''}
+    colours = json.loads(element[2])
+    for colour_id in colours:
+        cur.execute('SELECT name FROM colours WHERE id = ?', (colour_id,))
+        colour_name = cur.fetchone()[0]
+        ret['colours'] = '/'.join((ret['colours'], colour_name)) if ret['colours'] else colour_name
+
+    return ret
+
+
 def get_readable_elements(user_id, element):
     cur.execute('SELECT name, colours FROM makeup_elements WHERE user_id = ? AND type = ?', (user_id, element))
     elements = cur.fetchall()
@@ -194,3 +210,8 @@ def find(user_id, mk_type, name):
 
     return result
 
+
+def edit(mk_id, field, new_value):
+    cur.execute(f'UPDATE makeup_elements SET {field} = ? WHERE id = ?',
+                (new_value, mk_id))
+    base.commit()

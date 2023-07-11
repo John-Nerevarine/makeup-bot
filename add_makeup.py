@@ -47,8 +47,8 @@ async def callback_adding_makeup(callback_query: types.CallbackQuery,
 
 # CHOOSE COLOURS
 @dp.message_handler(state=AddMakeup.enter_name)
-async def callback_enter_makeup_name(message: types.Message,
-                                     state: FSMContext):
+async def massage_enter_makeup_name(message: types.Message,
+                                    state: FSMContext):
     name = message.text if message.text else "Unnamed"
     async with state.proxy() as data:
         mk_type = data['mk_type']
@@ -72,9 +72,10 @@ async def callback_enter_makeup_name(message: types.Message,
         await AddMakeup.choose_colour.set()
     else:
         await bot.delete_message(message.from_user.id, message.message_id)
-        await bot.edit_message_text(f'<b>There is no colours  in the data base! Please add any colour from "Add predefined colour"!</b>',
-                                    message.from_user.id, message_id,
-                                    reply_markup=kb.cancelKeyboard)
+        await bot.edit_message_text(
+            f'<b>There is no colours  in the data base! Please add any colour from "Add predefined colour"!</b>',
+            message.from_user.id, message_id,
+            reply_markup=kb.cancelKeyboard)
 
 
 # CONFIRM MAKEUP
@@ -140,8 +141,8 @@ async def callback_colour_additional(callback_query: types.CallbackQuery,
 
 # CONFIRMED MAKEUP
 @dp.callback_query_handler(text='confirm', state=AddMakeup.confirm)
-async def callback_colour_chosen(callback_query: types.CallbackQuery,
-                                 state: FSMContext):
+async def callback_confirm_makeup(callback_query: types.CallbackQuery,
+                                  state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
     async with state.proxy() as data:
         mk_type = data['mk_type']
@@ -223,9 +224,10 @@ async def callback_adding_colour_story(callback_query: types.CallbackQuery,
 
         await AddColour.choose_colour.set()
     else:
-        await bot.edit_message_text(f'<b>There is no colours  in the data base! Please add any colour from "Add predefined colour"!</b>',
-                                    callback_query.from_user.id, callback_query.message.message_id,
-                                    reply_markup=kb.cancelKeyboard)
+        await bot.edit_message_text(
+            f'<b>There is no colours  in the data base! Please add any colour from "Add predefined colour"!</b>',
+            callback_query.from_user.id, callback_query.message.message_id,
+            reply_markup=kb.cancelKeyboard)
 
 
 # CONFIRM COLOR STORY
