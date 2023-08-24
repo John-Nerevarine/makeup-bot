@@ -49,10 +49,23 @@ async def callback_adding_makeup(callback_query: types.CallbackQuery,
 @dp.message_handler(state=AddMakeup.enter_name)
 async def massage_enter_makeup_name(message: types.Message,
                                     state: FSMContext):
-    name = message.text if message.text else "Unnamed"
+    if message.text:
+        if '(' in message.text and ')' in message.text:
+            collection = message.text[message.text.index('(') + 1:message.text.index(')')]
+            name = message.text[:message.text.index('(')]
+            if name[-1] == ' ':
+                name = name[:-1]
+        else:
+            name = message.text
+            collection = None
+    else:
+        name = "Unnamed"
+        collection = None
+
     async with state.proxy() as data:
         mk_type = data['mk_type']
         data['name'] = name
+        data['collection'] = collection
         message_id = data['message_id']
         data['colours_id'] = []
         data['colours_name'] = ''
@@ -66,7 +79,7 @@ async def massage_enter_makeup_name(message: types.Message,
         keyboard.add(kb.cancelButton)
 
         await bot.delete_message(message.from_user.id, message.message_id)
-        await bot.edit_message_text(f'<b>New {mk_type.capitalize()}</b>\nName: {name}\nChoose colour:',
+        await bot.edit_message_text(f'<b>New {mk_type.capitalize()}</b>\nName: {name}\nCollection: {collection}\nChoose colour:',
                                     message.from_user.id, message_id,
                                     reply_markup=keyboard)
         await AddMakeup.choose_colour.set()
@@ -94,11 +107,13 @@ async def callback_colour_chosen(callback_query: types.CallbackQuery,
     async with state.proxy() as data:
         mk_type = data['mk_type']
         name = data['name']
+        collection = data['collection']
         data['colours_id'] = colours_id
         data['colours_name'] = colours_name
 
     text = '\n'.join((f'<b>New {mk_type}</b>',
                       f'Name: <i>{name}</i>',
+                      f'Collection: <i>{collection}</i>',
                       f'Colours: <i>{colours_name}</i>'))
 
     keyboard = InlineKeyboardMarkup()
@@ -120,10 +135,12 @@ async def callback_colour_additional(callback_query: types.CallbackQuery,
     async with state.proxy() as data:
         mk_type = data['mk_type']
         name = data['name']
+        collection = data['collection']
         colours_name = data['colours_name']
 
     text = '\n'.join((f'<b>New {mk_type}</b>',
                       f'Name: <i>{name}</i>',
+                      f'Collection: <i>{collection}</i>',
                       f'Colours: <i>{colours_name}</i>'))
 
     colours = data_base.get_colours(callback_query.from_user.id)
@@ -147,6 +164,7 @@ async def callback_confirm_makeup(callback_query: types.CallbackQuery,
     async with state.proxy() as data:
         mk_type = data['mk_type']
         name = data['name']
+        collection = data['collection']
         colours_id = data['colours_id']
         data['colours_id'] = []
         colours_name = data['colours_name']
@@ -154,10 +172,12 @@ async def callback_confirm_makeup(callback_query: types.CallbackQuery,
     data_base.add_element(user_id=callback_query.from_user.id,
                           name=name,
                           mk_type=mk_type,
-                          colours=colours_id)
+                          colours=colours_id,
+                          collection=collection)
 
     text = '\n'.join((f'<b>New {mk_type}</b>',
                       f'Name: <i>{name}</i>',
+                      f'Collection: <i>{collection}</i>',
                       f'Colours: <i>{colours_name}</i>',
                       '\nAdded to database!'))
 

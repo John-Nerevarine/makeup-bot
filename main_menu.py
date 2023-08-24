@@ -93,10 +93,10 @@ async def callback_show(callback_query: types.CallbackQuery,
     text = '<b>Elements in base:</b>'
     for makeup in MAKEUPS:
         elements = data_base.get_readable_elements(callback_query.from_user.id, makeup)
-        text = '\n\n'.join((text, f'### {makeup.capitalize()}{"es" if makeup[-1] == "s" else "s"} ###:'))
+        text = '\n\n'.join((text, f'### {makeup.capitalize()}{"es" if makeup[-1] == "s" or makeup[-1] == "h" else "s"} ###:'))
         if elements:
             for element in elements:
-                text = '\n'.join((text, f'- "{element[0]}", colours: {element[1]}.'))
+                text = '\n'.join((text, f'- "{element[0]}", colours: {element[1]}, priority: {element[2]}.'))
         else:
             text = '\n'.join((text, f'- No {makeup} in  database!'))
 

@@ -16,7 +16,9 @@ def sqlStart():
                     user_id INTEGER,
                     type TEXT,
                     name TEXT,
-                    colours TEXT
+                    colours TEXT,
+                    collections TEXT,
+                    priority INTEGER
                     )''')
 
         base.execute('''CREATE TABLE IF NOT EXISTS colours(
@@ -36,13 +38,15 @@ def sqlStart():
 
 
 def get_elements(user_id, element):
-    cur.execute('SELECT name, id FROM makeup_elements WHERE user_id = ? AND type = ?', (user_id, element))
+    cur.execute('SELECT name, id FROM makeup_elements WHERE user_id = ? AND type = ?',
+                (user_id, element))
     elements = cur.fetchall()
     return elements
 
 
 def get_one_element(user_id, element_id):
-    cur.execute('SELECT name, type, colours FROM makeup_elements WHERE user_id = ? AND id = ?', (user_id, element_id))
+    cur.execute('SELECT name, type, colours FROM makeup_elements WHERE user_id = ? AND id = ?',
+                (user_id, element_id))
     element = cur.fetchone()
     ret = {'name': element[0],
            'type': element[1],
@@ -50,7 +54,8 @@ def get_one_element(user_id, element_id):
            'colours': ''}
     colours = json.loads(element[2])
     for colour_id in colours:
-        cur.execute('SELECT name FROM colours WHERE id = ?', (colour_id,))
+        cur.execute('SELECT name FROM colours WHERE id = ?',
+                    (colour_id,))
         colour_name = cur.fetchone()[0]
         ret['colours'] = '/'.join((ret['colours'], colour_name)) if ret['colours'] else colour_name
 
@@ -58,51 +63,60 @@ def get_one_element(user_id, element_id):
 
 
 def get_readable_elements(user_id, element):
-    cur.execute('SELECT name, colours FROM makeup_elements WHERE user_id = ? AND type = ?', (user_id, element))
+    cur.execute('SELECT name, colours, collection, priority FROM makeup_elements WHERE user_id = ? AND type = ?',
+                (user_id, element))
     elements = cur.fetchall()
     ret_elements = []
     for element in elements:
-        ret_elements.append([element[0].capitalize()])
+        ret_elements.append([f'{element[0].capitalize()} ({element[2]})' if element[2] else element[0].capitalize()])
         colours = json.loads(element[1])
         ret_elements[-1].append('')
+        ret_elements[-1].append(element[3])
         for colour_id in colours:
-            cur.execute('SELECT name FROM colours WHERE id = ?', (colour_id,))
+            cur.execute('SELECT name FROM colours WHERE id = ?',
+                        (colour_id,))
             colour_name = cur.fetchone()[0]
             ret_elements[-1][1] = ', '.join((ret_elements[-1][1], colour_name)) if ret_elements[-1][1] else colour_name
 
     return ret_elements
 
 
-def add_element(user_id, name, mk_type, colours):
+def add_element(user_id, name, mk_type, colours, collection):
     colours = json.dumps(colours)
-    cur.execute('INSERT INTO makeup_elements VALUES(null, ?, ?, ?, ?)', (user_id, mk_type, name, colours))
+    cur.execute('INSERT INTO makeup_elements VALUES(null, ?, ?, ?, ?, ?, 6)',
+                (user_id, mk_type, name, colours, collection))
     # cur.execute('INSERT INTO makeup_elements(user_id, type, name, colours) VALUES(?, ?, ?, ?)', (user_id, mk_type, name, colours))
     base.commit()
 
 
 def remove_element(user_id, element_id):
-    cur.execute('''DELETE FROM makeup_elements WHERE user_id = ? AND id = ?''', (user_id, element_id))
+    cur.execute('''DELETE FROM makeup_elements WHERE user_id = ? AND id = ?''',
+                (user_id, element_id))
     base.commit()
 
 
 def get_colours(user_id):
-    cur.execute('SELECT name, id FROM colours WHERE user_id = ?', (user_id,))
+    cur.execute('SELECT name, id FROM colours WHERE user_id = ?',
+                (user_id,))
     colours = cur.fetchall()
     return colours
 
 
 def add_colour(user_id, colour_name):
-    cur.execute('INSERT INTO colours VALUES(null, ?, ?)', (user_id, colour_name))
+    cur.execute('INSERT INTO colours VALUES(null, ?, ?)',
+                (user_id, colour_name))
     base.commit()
 
 
 def remove_colour(user_id, colour_id):
-    cur.execute('''DELETE FROM colours WHERE user_id = ? AND id = ?''', (user_id, colour_id))
+    cur.execute('''DELETE FROM colours WHERE user_id = ? AND id = ?''',
+                (user_id, colour_id))
     base.commit()
 
 
 def get_colour_stories(user_id):
-    cur.execute('SELECT name, id FROM colour_stories WHERE user_id = ?', (user_id,))
+    cur.execute('SELECT name, id FROM colour_stories WHERE user_id = ?',
+                (user_id,))
     colour_stories = cur.fetchall()
     return colour_stories
 
@@ -110,18 +124,44 @@ def get_colour_stories(user_id):
 def add_colour_story(user_id, colours):
     name = '/'.join((str(col[0]) for col in colours))
     colours = json.dumps([col[1] for col in colours])
-    cur.execute('INSERT INTO colour_stories VALUES(null, ?, ?, ?)', (user_id, name, colours))
+    cur.execute('INSERT INTO colour_stories VALUES(null, ?, ?, ?)',
+                (user_id, name, colours))
     base.commit()
 
 
 def remove_colour_story(user_id, cs_id):
-    cur.execute('''DELETE FROM colour_story WHERE user_id = ? AND id = ?''', (user_id, cs_id))
+    cur.execute('''DELETE FROM colour_story WHERE user_id = ? AND id = ?''',
+                (user_id, cs_id))
     base.commit()
+
+
+def get_elements_by_priority(elements):
+    if not elements:
+        return elements
+    weights = []
+    for el in elements:
+        if el[2] not in weights:
+            weights.append(el[2])
+
+    new_elements = []
+    while not new_elements:
+        cur_weight = max(weights)
+        dice = randint(1, 10)
+        if dice <= cur_weight:
+            for el in elements:
+                if el[2] == cur_weight:
+                    new_elements.append(el)
+        else:
+            weights.remove(cur_weight)
+            if not weights:
+                new_elements.append(choice(elements))
+    return new_elements
 
 
 def get_makeup_from_colour_story(user_id, colour_story_id):
     makeup = {}
-    cur.execute('SELECT colours FROM colour_stories WHERE user_id = ? AND id = ?', (user_id, colour_story_id))
+    cur.execute('SELECT colours FROM colour_stories WHERE user_id = ? AND id = ?',
+                (user_id, colour_story_id))
     colours = json.loads(cur.fetchone()[0])
 
     for element_type in MAKEUPS:
@@ -129,29 +169,36 @@ def get_makeup_from_colour_story(user_id, colour_story_id):
             makeup[element_type] = 'Black'
             continue
 
-        cur.execute('SELECT name, colours FROM makeup_elements WHERE user_id = ? AND type = ?', (user_id, element_type))
+        cur.execute('SELECT name, colours, priority, collection FROM makeup_elements WHERE user_id = ? AND type = ?',
+                    (user_id, element_type))
         all_elements = cur.fetchall()
         elements_to_use = []
         for current_element in all_elements:
             for colour in json.loads(current_element[1]):
                 if colour in colours:
-                    elements_to_use.append(current_element[0])
+                    elements_to_use.append(current_element)
                     break
-
+        ########
+        elements_to_use = get_elements_by_priority(elements_to_use)
+        ########
         if elements_to_use:
             if element_type == 'eyeshadow' or element_type == 'eyeliner':
                 amount = randint(1, 3)
                 makeup[element_type] = ''
                 if len(elements_to_use) < amount:
-                    makeup[element_type] = ', '.join([i for i in elements_to_use])
+                    makeup[element_type] = ', '.join([f'{i[0]} ({i[3]})' if i[3] else i[0]
+                                                      for i in elements_to_use])
                 else:
                     for i in range(amount):
                         curr_makeup = choice(elements_to_use)
                         elements_to_use.remove(curr_makeup)
-                        makeup[element_type] = ', '.join((makeup[element_type],
-                                                          curr_makeup)) if makeup[element_type] else curr_makeup
+                        curr_makeup_text = f'{curr_makeup[0]} ({curr_makeup[3]})' if curr_makeup[3] else curr_makeup[0]
+                        makeup[element_type] = (', '.join((makeup[element_type], curr_makeup_text))
+                                                if makeup[element_type] else curr_makeup_text)
             else:
-                makeup[element_type] = choice(elements_to_use)
+                curr_makeup = choice(elements_to_use)
+                curr_makeup_text = f'{curr_makeup[0]} ({curr_makeup[3]})' if curr_makeup[3] else curr_makeup[0]
+                makeup[element_type] = curr_makeup_text
         else:
             makeup[element_type] = f'No <b>{element_type}</b> in database!'
 
@@ -176,22 +223,27 @@ def get_full_random(user_id):
             makeup[element_type] = 'Black'
             continue
 
-        cur.execute('SELECT name FROM makeup_elements WHERE user_id = ? AND type = ?', (user_id, element_type))
+        cur.execute('SELECT name, collection FROM makeup_elements WHERE user_id = ? AND type = ?',
+                    (user_id, element_type))
         all_elements = list(cur.fetchall())
         if all_elements:
             if element_type == 'eyeshadow' or element_type == 'eyeliner':
                 amount = randint(1, 3)
                 makeup[element_type] = ''
                 if len(all_elements) < amount:
-                    makeup[element_type] = ', '.join([i for i in all_elements])
+                    makeup[element_type] = ', '.join([f'{i[0]} ({i[1]})' if i[1] else i[0]
+                                                      for i in all_elements])
                 else:
                     for i in range(amount):
                         curr_makeup = choice(all_elements)
                         all_elements.remove(curr_makeup)
-                        makeup[element_type] = ', '.join((makeup[element_type],
-                                                          curr_makeup[0])) if makeup[element_type] else curr_makeup[0]
+                        curr_makeup_text = f'{curr_makeup[0]} ({curr_makeup[1]})' if curr_makeup[1] else curr_makeup[0]
+                        makeup[element_type] = (', '.join((makeup[element_type], curr_makeup_text))
+                                                if makeup[element_type] else curr_makeup_text)
             else:
-                makeup[element_type] = choice(all_elements)[0]
+                curr_makeup = choice(all_elements)
+                curr_makeup_text = f'{curr_makeup[0]} ({curr_makeup[1]})' if curr_makeup[1] else curr_makeup[0]
+                makeup[element_type] = curr_makeup_text
         else:
             makeup[element_type] = f'No <b>{element_type}</b> in database!'
 
