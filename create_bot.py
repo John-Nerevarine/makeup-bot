@@ -66,6 +66,7 @@ class Edit(StatesGroup):
     chose_makeup = State()
     edit = State()
     enter_name = State()
+    enter_priority = State()
     colours = State()
     confirm_colours = State()
     additional_colour = State()

@@ -38,20 +38,22 @@ def sqlStart():
 
 
 def get_elements(user_id, element):
-    cur.execute('SELECT name, id FROM makeup_elements WHERE user_id = ? AND type = ?',
+    cur.execute('SELECT name, id, collection FROM makeup_elements WHERE user_id = ? AND type = ?',
                 (user_id, element))
     elements = cur.fetchall()
     return elements
 
 
 def get_one_element(user_id, element_id):
-    cur.execute('SELECT name, type, colours FROM makeup_elements WHERE user_id = ? AND id = ?',
+    cur.execute('SELECT name, type, colours, collection, priority FROM makeup_elements WHERE user_id = ? AND id = ?',
                 (user_id, element_id))
     element = cur.fetchone()
     ret = {'name': element[0],
            'type': element[1],
            'id': element_id,
-           'colours': ''}
+           'colours': '',
+           'collection': element[3],
+           'priority': element[4]}
     colours = json.loads(element[2])
     for colour_id in colours:
         cur.execute('SELECT name FROM colours WHERE id = ?',

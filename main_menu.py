@@ -124,9 +124,7 @@ async def callback_show(callback_query: types.CallbackQuery,
             text = text[index + 1:]
         else:
             show_all_texts.append(text)
-        keyboard = InlineKeyboardMarkup()
-        keyboard.insert(kb.nextButton)
-        keyboard.add(kb.backButton)
+        keyboard = kb.nextKeyboard
     else:
         show_all_texts.append(text)
         keyboard = kb.backKeyboard
@@ -152,19 +150,16 @@ async def callback_show(callback_query: types.CallbackQuery,
         show_all_texts = data['show_all']
         show_all_index = data['show_all_index']
 
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(kb.prevButton)
+    keyboard = kb.prevKeyboard
 
     if len(show_all_texts) > show_all_index + 1:
         text = show_all_texts[show_all_index + 1]
         show_all_index += 1
         if len(show_all_texts) > show_all_index + 1:
-            keyboard.insert(kb.nextButton)
+            keyboard = kb.nextPrevKeyboard
 
     else:
         text = 'No next data. It\'s an error. Send nudes to the developer!'
-
-    keyboard.add(kb.backButton)
 
     async with state.proxy() as data:
         data['show_all_index'] = show_all_index
@@ -183,19 +178,16 @@ async def callback_show(callback_query: types.CallbackQuery,
         show_all_texts = data['show_all']
         show_all_index = data['show_all_index']
 
-    keyboard = InlineKeyboardMarkup()
+    keyboard = kb.nextKeyboard
 
     if show_all_index - 1 >= 0:
         text = show_all_texts[show_all_index - 1]
         show_all_index -= 1
         if show_all_index - 1 >= 0:
-            keyboard.insert(kb.prevButton)
+            keyboard = kb.nextPrevKeyboard
 
     else:
         text = 'No prev data. It\'s an error. Send nudes to the developer!'
-
-    keyboard.add(kb.nextButton)
-    keyboard.add(kb.backButton)
 
     async with state.proxy() as data:
         data['show_all_index'] = show_all_index

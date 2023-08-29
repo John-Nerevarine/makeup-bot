@@ -16,6 +16,22 @@ gotKeyboard = InlineKeyboardMarkup().add(gotButton)
 # Back Keyboard
 backKeyboard = InlineKeyboardMarkup().add(backButton)
 
+# Next Keyboard
+nextKeyboard = InlineKeyboardMarkup()
+nextKeyboard.insert(nextButton)
+nextKeyboard.add(backButton)
+
+# Prev Keyboard
+prevKeyboard = InlineKeyboardMarkup()
+prevKeyboard.insert(prevButton)
+prevKeyboard.add(backButton)
+
+# Next\Prev Keyboard
+nextPrevKeyboard = InlineKeyboardMarkup()
+nextPrevKeyboard.insert(prevButton)
+nextPrevKeyboard.insert(nextButton)
+nextPrevKeyboard.add(backButton)
+
 # Restart Keyboard
 restartKeyboard = InlineKeyboardMarkup().add(mMenuButton)
 
@@ -64,7 +80,7 @@ settingsKeyboard.add(backButton)
 edit_buttons = (
     InlineKeyboardButton('Edit Name', callback_data='edit_name'),
     InlineKeyboardButton('Edit Colours', callback_data='edit_colours'),
-    InlineKeyboardButton('Edit Priority (NOT WORKING)', callback_data='edit_priority'))
+    InlineKeyboardButton('Edit Priority', callback_data='edit_priority'))
 
 editKeyboard = InlineKeyboardMarkup()
 for button in edit_buttons:

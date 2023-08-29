@@ -1,10 +1,11 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import MessageNotModified
 import keyboards as kb
 import json
 from main_menu import getBackData
 import data_base
-from create_bot import bot, dp, Find, Edit, Settings, MAKEUPS
+from create_bot import bot, dp, Edit, Settings, MAKEUPS
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
@@ -36,11 +37,28 @@ async def callback_edit_choose_name(callback_query: types.CallbackQuery,
     elements = data_base.get_elements(callback_query.from_user.id, mk_type)
     if elements:
         text = f'<b>Choose {mk_type}</b>:'
+        elements_groups = []
+        while len(elements) > 30:
+            elements_groups.append(elements[:30])
+            elements = elements[30:]
+        else:
+            elements_groups.append(elements)
+
         keyboard = InlineKeyboardMarkup()
-        for el in elements:
-            keyboard.add(InlineKeyboardButton(el[0], callback_data=str(el[1])))
+        for el in elements_groups[0]:
+            button_text = f'{el[0]} ({el[2]})'
+            keyboard.add(InlineKeyboardButton(button_text, callback_data=str(el[1])))
+
+        if len(elements_groups) > 1:
+            keyboard.add(kb.nextButton)
         keyboard.add(kb.backButton)
         keyboard.add(kb.mMenuButton)
+
+        async with state.proxy() as data:
+            data['elements_groups'] = elements_groups
+            data['group_index'] = 0
+            data['mk_type'] = mk_type
+
     else:
         text = f'<b>NO {mk_type}</b> in the database!'
         keyboard = kb.backKeyboard
@@ -57,9 +75,74 @@ async def callback_edit_choose_name(callback_query: types.CallbackQuery,
 async def callback_edit_menu(callback_query: types.CallbackQuery,
                              state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
+    # Show next
+    if callback_query.data == 'next':
+        async with state.proxy() as data:
+            elements_groups = data['elements_groups']
+            group_index = data['group_index']
+            mk_type = data['mk_type']
+        if len(elements_groups) > group_index + 1:
+            group_index += 1
+            keyboard = InlineKeyboardMarkup()
+            for el in elements_groups[group_index]:
+                button_text = f'{el[0]} ({el[2]})'
+                keyboard.add(InlineKeyboardButton(button_text, callback_data=str(el[1])))
+
+            keyboard.add(kb.prevButton)
+            if len(elements_groups) > group_index + 1:
+                keyboard.add(kb.nextButton)
+            keyboard.add(kb.backButton)
+            keyboard.add(kb.mMenuButton)
+
+            text = f'<b>Choose {mk_type}</b>:\nPage {group_index + 1}'
+            await bot.edit_message_text(text,
+                                        callback_query.from_user.id, callback_query.message.message_id,
+                                        reply_markup=keyboard)
+
+            async with state.proxy() as data:
+                data['group_index'] = group_index
+        else:
+            text = 'No next data. It\'s an error. Send nudes to the developer!'
+            await bot.edit_message_text(text,
+                                        callback_query.from_user.id, callback_query.message.message_id,
+                                        reply_markup=kb.cancelKeyboard)
+        return
+    # Show previous
+    elif callback_query.data == 'prev':
+        async with state.proxy() as data:
+            elements_groups = data['elements_groups']
+            group_index = data['group_index']
+            mk_type = data['mk_type']
+        if group_index - 1 >= 0:
+            group_index -= 1
+            keyboard = InlineKeyboardMarkup()
+            for el in elements_groups[group_index]:
+                button_text = f'{el[0]} ({el[2]})'
+                keyboard.add(InlineKeyboardButton(button_text, callback_data=str(el[1])))
+
+            if group_index - 1 >= 0:
+                keyboard.add(kb.prevButton)
+            keyboard.add(kb.nextButton)
+            keyboard.add(kb.backButton)
+            keyboard.add(kb.mMenuButton)
+
+            text = f'<b>Choose {mk_type}</b>:\nPage {group_index + 1}'
+            await bot.edit_message_text(text,
+                                        callback_query.from_user.id, callback_query.message.message_id,
+                                        reply_markup=keyboard)
+
+            async with state.proxy() as data:
+                data['group_index'] = group_index
+        else:
+            text = 'No prev data. It\'s an error. Send nudes to the developer!'
+            await bot.edit_message_text(text,
+                                        callback_query.from_user.id, callback_query.message.message_id,
+                                        reply_markup=kb.cancelKeyboard)
+        return
     mk_id = int(callback_query.data)
     makeup = data_base.get_one_element(callback_query.from_user.id, mk_id)
-    text = f'<b>{makeup["type"].capitalize()}</b> "{makeup["name"]}". Colours: {makeup["colours"]}'
+    text = f'{makeup["type"].capitalize()} <b>"{makeup["name"]} ({makeup["collection"]})"</b>,\
+ Colours: {makeup["colours"]}, Priority: {makeup["priority"]}'
 
     await bot.edit_message_text(text,
                                 callback_query.from_user.id, callback_query.message.message_id,
@@ -81,7 +164,7 @@ async def callback_edit_name(callback_query: types.CallbackQuery,
     async with state.proxy() as data:
         makeup = data['makeup']
 
-    text = f'Enter new name for "{makeup["name"]}:"'
+    text = f'Enter new name for <b>"{makeup["name"]} ({makeup["collection"]}):"</b>'
 
     m = await bot.edit_message_text(text,
                                     callback_query.from_user.id, callback_query.message.message_id,
@@ -97,9 +180,22 @@ async def callback_edit_name(callback_query: types.CallbackQuery,
 @dp.message_handler(state=Edit.enter_name)
 async def massage_edit_name(message: types.Message,
                             state: FSMContext):
-    name = message.text if message.text else "Unnamed"
+    if message.text:
+        if '(' in message.text and ')' in message.text:
+            collection = message.text[message.text.index('(') + 1:message.text.index(')')]
+            name = message.text[:message.text.index('(')]
+            if name[-1] == ' ':
+                name = name[:-1]
+        else:
+            name = message.text
+            collection = None
+    else:
+        name = "Unnamed"
+        collection = None
+
     async with state.proxy() as data:
         data['makeup']['name'] = name
+        data['makeup']['collection'] = collection
         makeup = data['makeup']
         message_id = data['message_id']
         data['backStates'].pop(-1)
@@ -107,9 +203,11 @@ async def massage_edit_name(message: types.Message,
         data['backKeyboards'].pop(-1)
 
     data_base.edit(makeup['id'], 'name', name)
+    data_base.edit(makeup['id'], 'collection', collection)
 
     text = '\n\n'.join((f'<b>Name changed!</b>',
-                        f'<b>{makeup["type"].capitalize()} "{makeup["name"]}". Colours: {makeup["colours"]}</b>'))
+                        f'{makeup["type"].capitalize()} <b>"{makeup["name"]} ({makeup["collection"]})"</b>,\
+ Colours: {makeup["colours"]}, Priority: {makeup["priority"]}'))
 
     await bot.delete_message(message.from_user.id, message.message_id)
     await bot.edit_message_text(text,
@@ -141,7 +239,7 @@ async def callback_edit_colours(callback_query: types.CallbackQuery,
             keyboard.add(InlineKeyboardButton(colour[0], callback_data=cb_data))
         keyboard.add(kb.cancelButton)
 
-        text = f'Choose new colour for <b>"{makeup["name"]}"</b>:'
+        text = f'Choose new colour for <b>"{makeup["name"]} ({makeup["collection"]})"</b>:'
         await bot.edit_message_text(text,
                                     callback_query.from_user.id, callback_query.message.message_id,
                                     reply_markup=keyboard)
@@ -171,7 +269,7 @@ async def callback_edit_confirm_colours(callback_query: types.CallbackQuery,
         data['colours_id'] = colours_id
         data['colours_name'] = colours_name
 
-    text = '\n\n'.join((f'{makeup["type"]} "{makeup["name"]}"',
+    text = '\n\n'.join((f'{makeup["type"]} <b>"{makeup["name"]} ({makeup["collection"]})"</b>',
                         f'New colours: <i>{colours_name}</i>'))
 
     keyboard = InlineKeyboardMarkup()
@@ -188,14 +286,14 @@ async def callback_edit_confirm_colours(callback_query: types.CallbackQuery,
 # ADDITIONAL COLOUR
 @dp.callback_query_handler(text='add', state=Edit.confirm_colours)
 async def callback_edit_colour_additional(callback_query: types.CallbackQuery,
-                                     state: FSMContext):
+                                          state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
     async with state.proxy() as data:
         makeup = data['makeup']
         colours = data['colours']
         colours_name = data['colours_name']
 
-    text = '\n\n'.join((f'{makeup["type"]} "{makeup["name"]}"',
+    text = '\n\n'.join((f'{makeup["type"]} <b>"{makeup["name"]} ({makeup["collection"]})"</b>',
                         f'New colours: <i>{colours_name}</i>\nChoose colour to add:'))
 
     keyboard = InlineKeyboardMarkup()
@@ -213,7 +311,7 @@ async def callback_edit_colour_additional(callback_query: types.CallbackQuery,
 # CONFIRMED COLOURS
 @dp.callback_query_handler(text='confirm', state=Edit.confirm_colours)
 async def callback_confirmed_colours(callback_query: types.CallbackQuery,
-                                 state: FSMContext):
+                                     state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
     async with state.proxy() as data:
         data['makeup']['colours'] = data['colours_name']
@@ -228,9 +326,79 @@ async def callback_confirmed_colours(callback_query: types.CallbackQuery,
     data_base.edit(makeup['id'], 'colours', colours_id)
 
     text = '\n\n'.join((f'<b>Colours changed!</b>',
-                        f'<b>{makeup["type"].capitalize()} "{makeup["name"]}". Colours: {makeup["colours"]}</b>'))
+                        f'{makeup["type"].capitalize()} <b>"{makeup["name"]} ({makeup["collection"]})"</b>,\
+ Colours: {makeup["colours"]}, Priority: {makeup["priority"]}'))
 
     await bot.edit_message_text(text,
                                 callback_query.from_user.id, callback_query.message.message_id,
                                 reply_markup=kb.editKeyboard)
+    await Edit.edit.set()
+
+
+# ENTER PRIORITY
+@dp.callback_query_handler(text='edit_priority', state=Edit.edit)
+async def callback_edit_priority(callback_query: types.CallbackQuery,
+                                 state: FSMContext):
+    await getBackData(state, callback_query.message)
+    await bot.answer_callback_query(callback_query.id)
+
+    async with state.proxy() as data:
+        makeup = data['makeup']
+
+    text = f'Enter new priority for <b>"{makeup["name"]} ({makeup["collection"]}):"</b>'
+
+    m = await bot.edit_message_text(text,
+                                    callback_query.from_user.id, callback_query.message.message_id,
+                                    reply_markup=kb.cancelKeyboard)
+
+    async with state.proxy() as data:
+        data['message_id'] = m.message_id
+
+    await Edit.enter_priority.set()
+
+
+# PRIORITY CHANGED
+@dp.message_handler(state=Edit.enter_priority)
+async def massage_edit_name(message: types.Message,
+                            state: FSMContext):
+    if message.text.isdigit() and 0 <= int(message.text) <= 10:
+        priority = int(message.text)
+    else:
+        async with state.proxy() as data:
+            makeup = data['makeup']
+            message_id = data['message_id']
+
+        text = '\n'.join((f'Enter new priority for <b>"{makeup["name"]} ({makeup["collection"]}):"</b>',
+                          'Enter number between 0 and 10!',))
+        await bot.delete_message(message.from_user.id, message.message_id)
+        try:
+            await bot.edit_message_text(text,
+                                        message.from_user.id, message_id,
+                                        reply_markup=kb.cancelKeyboard)
+        except MessageNotModified as exc:
+            text += '!'
+            await bot.edit_message_text(text,
+                                        message.from_user.id, message_id,
+                                        reply_markup=kb.cancelKeyboard)
+        return
+
+    async with state.proxy() as data:
+        data['makeup']['priority'] = priority
+        makeup = data['makeup']
+        message_id = data['message_id']
+        data['backStates'].pop(-1)
+        data['backTexts'].pop(-1)
+        data['backKeyboards'].pop(-1)
+
+    data_base.edit(makeup['id'], 'priority', priority)
+
+    text = '\n\n'.join((f'<b>Priority changed!</b>',
+                        f'{makeup["type"].capitalize()} <b>"{makeup["name"]} ({makeup["collection"]})"</b>,\
+ Colours: {makeup["colours"]}, Priority: {makeup["priority"]}'))
+
+    await bot.delete_message(message.from_user.id, message.message_id)
+    await bot.edit_message_text(text,
+                                message.from_user.id, message_id,
+                                reply_markup=kb.editKeyboard)
+
     await Edit.edit.set()
