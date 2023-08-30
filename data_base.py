@@ -101,6 +101,7 @@ def get_colours(user_id):
     cur.execute('SELECT name, id FROM colours WHERE user_id = ?',
                 (user_id,))
     colours = cur.fetchall()
+    colours = sorted(colours, key=lambda colour: colour[0])
     return colours
 
 
