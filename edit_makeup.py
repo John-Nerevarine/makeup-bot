@@ -121,7 +121,9 @@ async def callback_edit_menu(callback_query: types.CallbackQuery,
 
             if group_index - 1 >= 0:
                 keyboard.add(kb.prevButton)
-            keyboard.insert(kb.nextButton)
+                keyboard.insert(kb.nextButton)
+            else:
+                keyboard.add(kb.nextButton)
             keyboard.add(kb.backButton)
             keyboard.add(kb.mMenuButton)
 

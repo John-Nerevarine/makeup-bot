@@ -56,19 +56,36 @@ async def callback_find_result(message: types.Message,
     result = data_base.find(message.from_user.id, mk_type, name)
 
     if result:
-        keyboard = InlineKeyboardMarkup()
-        for element in result:
-            keyboard.add(InlineKeyboardButton(element[0], callback_data=str(element[1])))
-        keyboard.add(kb.backButton)
+        text = f'{mk_type.capitalize()} <b>"{name}"</b> found:'
+        elements_groups = []
+        while len(result) > 30:
+            elements_groups.append(result[:30])
+            result = result[30:]
+        else:
+            elements_groups.append(result)
 
-        await bot.delete_message(message.from_user.id, message.message_id)
-        await bot.edit_message_text(f'<b>{mk_type.capitalize()} "{name}" found:</b>',
-                                    message.from_user.id, message_id,
-                                    reply_markup=keyboard)
+        keyboard = InlineKeyboardMarkup()
+        for el in elements_groups[0]:
+            button_text = f'{el[0]} ({el[2]})'
+            keyboard.add(InlineKeyboardButton(button_text, callback_data=str(el[1])))
+
+        if len(elements_groups) > 1:
+            keyboard.add(kb.nextButton)
+        keyboard.add(kb.backButton)
+        keyboard.add(kb.mMenuButton)
+
+        async with state.proxy() as data:
+            data['elements_groups'] = elements_groups
+            data['group_index'] = 0
+            data['mk_type'] = mk_type
+
         await Edit.chose_makeup.set()
     else:
         await bot.delete_message(message.from_user.id, message.message_id)
-        await bot.edit_message_text(
-            f'<b>NO {mk_type.capitalize()} "{name}" found.</b>',
-            message.from_user.id, message_id,
-            reply_markup=kb.backKeyboard)
+        text = f'<b>NO {mk_type.capitalize()} "{name}" found.</b>'
+        keyboard = kb.backKeyboard
+
+    await bot.delete_message(message.from_user.id, message.message_id)
+    await bot.edit_message_text(text,
+                                message.from_user.id, message_id,
+                                reply_markup=keyboard)

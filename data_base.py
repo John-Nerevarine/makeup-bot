@@ -254,7 +254,7 @@ def get_full_random(user_id):
 
 
 def find(user_id, mk_type, name):
-    cur.execute('SELECT name, id FROM makeup_elements WHERE user_id = ? AND type = ?',
+    cur.execute('SELECT name, id, collection FROM makeup_elements WHERE user_id = ? AND type = ?',
                 (user_id, mk_type))
     elements = cur.fetchall()
     result = []
