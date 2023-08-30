@@ -1,5 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import MessageNotModified
 import keyboards as kb
 from main_menu import getBackData
 import data_base
@@ -50,6 +51,21 @@ async def callback_adding_makeup(callback_query: types.CallbackQuery,
 async def massage_enter_makeup_name(message: types.Message,
                                     state: FSMContext):
     if message.text:
+        async with state.proxy() as data:
+            message_id = data['message_id']
+
+        if data_base.find_existence(message.from_user.id, message.text):
+            await bot.delete_message(message.from_user.id, message.message_id)
+            text = f'<b>{message.text}</b> is already in base! Try another one...'
+            try:
+                await bot.edit_message_text(text,
+                                            message.from_user.id, message_id,
+                                            reply_markup=kb.cancelKeyboard)
+            except MessageNotModified:
+                await bot.edit_message_text(text + '.',
+                                            message.from_user.id, message_id,
+                                            reply_markup=kb.cancelKeyboard)
+            return
         if '(' in message.text and ')' in message.text:
             collection = message.text[message.text.index('(') + 1:message.text.index(')')]
             name = message.text[:message.text.index('(')]
@@ -79,9 +95,10 @@ async def massage_enter_makeup_name(message: types.Message,
         keyboard.add(kb.cancelButton)
 
         await bot.delete_message(message.from_user.id, message.message_id)
-        await bot.edit_message_text(f'<b>New {mk_type.capitalize()}</b>\nName: {name}\nCollection: {collection}\nChoose colour:',
-                                    message.from_user.id, message_id,
-                                    reply_markup=keyboard)
+        await bot.edit_message_text(
+            f'<b>New {mk_type.capitalize()}</b>\nName: {name}\nCollection: {collection}\nChoose colour:',
+            message.from_user.id, message_id,
+            reply_markup=keyboard)
         await AddMakeup.choose_colour.set()
     else:
         await bot.delete_message(message.from_user.id, message.message_id)

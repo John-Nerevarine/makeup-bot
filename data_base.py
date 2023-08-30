@@ -269,3 +269,20 @@ def edit(mk_id, field, new_value):
     cur.execute(f'UPDATE makeup_elements SET {field} = ? WHERE id = ?',
                 (new_value, mk_id))
     base.commit()
+
+
+def find_existence(user_id, full_name):
+    if '(' in full_name and ')' in full_name:
+        collection = full_name[full_name.index('(') + 1:full_name.index(')')]
+        name = full_name[:full_name.index('(')]
+        if name[-1] == ' ':
+            name = name[:-1]
+    else:
+        name = full_name
+        collection = None
+    cur.execute('SELECT id FROM makeup_elements WHERE user_id = ? AND name = ? AND collection = ?',
+                (user_id, name, collection))
+    if cur.fetchone():
+        return True
+    else:
+        return False
