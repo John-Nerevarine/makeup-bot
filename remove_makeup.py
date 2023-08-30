@@ -33,24 +33,43 @@ async def callback_remove_makeup(callback_query: types.CallbackQuery,
     await getBackData(state, callback_query.message)
     await bot.answer_callback_query(callback_query.id)
 
-    elements = data_base.get_elements(callback_query.from_user.id, callback_query.data)
+    mk_type = callback_query.data
+    elements = data_base.get_elements(callback_query.from_user.id, mk_type)
 
     if elements:
-        keyboard = InlineKeyboardMarkup()
-        for element in elements:
-            cb_data = '|'.join((element[0], str(element[1])))
-            keyboard.add(InlineKeyboardButton(element[0], callback_data=cb_data))
-        keyboard.add(kb.backButton)
+        text = f'<b>Choose {mk_type} to remove</b>:'
+        elements_groups = []
+        while len(elements) > 30:
+            elements_groups.append(elements[:30])
+            elements = elements[30:]
+        else:
+            elements_groups.append(elements)
 
-        await bot.edit_message_text('<b>Choose makeup to remove:</b>',
-                                    callback_query.from_user.id, callback_query.message.message_id,
-                                    reply_markup=keyboard)
+        keyboard = InlineKeyboardMarkup()
+        for el in elements_groups[0]:
+            button_text = f'{el[0]} ({el[2]})'
+            cb_data = '|'.join((el[0], str(el[1]), el[2]))
+            keyboard.add(InlineKeyboardButton(button_text, callback_data=cb_data))
+
+        if len(elements_groups) > 1:
+            keyboard.add(kb.nextButton)
+        keyboard.add(kb.backButton)
+        keyboard.add(kb.mMenuButton)
+
+        async with state.proxy() as data:
+            data['elements_groups'] = elements_groups
+            data['group_index'] = 0
+            data['mk_type'] = mk_type
+
         await RemoveMakeup.makeup.set()
 
     else:
-        await bot.edit_message_text(f'<b>No {callback_query.data} to remove!</b>',
-                                    callback_query.from_user.id, callback_query.message.message_id,
-                                    reply_markup=kb.cancelKeyboard)
+        text = f'<b>NO {mk_type}</b> in the database!'
+        keyboard = kb.cancelKeyboard
+
+    await bot.edit_message_text(text,
+                                callback_query.from_user.id, callback_query.message.message_id,
+                                reply_markup=keyboard)
 
 
 # REMOVE MAKEUP DONE
@@ -60,9 +79,78 @@ async def callback_removed_makeup(callback_query: types.CallbackQuery,
     await bot.answer_callback_query(callback_query.id)
 
     cb_data = callback_query.data.split('|')
-    data_base.remove_element(callback_query.from_user.id, int(cb_data[1]))
 
-    await bot.edit_message_text(f'<b>{cb_data[0].capitalize()} removed!</b>',
+    # Show next
+    if callback_query.data == 'next':
+        async with state.proxy() as data:
+            elements_groups = data['elements_groups']
+            group_index = data['group_index']
+            mk_type = data['mk_type']
+        if len(elements_groups) > group_index + 1:
+            group_index += 1
+            keyboard = InlineKeyboardMarkup()
+            for el in elements_groups[group_index]:
+                button_text = f'{el[0]} ({el[2]})'
+                cb_data = '|'.join((el[0], str(el[1]), el[2]))
+                keyboard.add(InlineKeyboardButton(button_text, callback_data=cb_data))
+
+            keyboard.add(kb.prevButton)
+            if len(elements_groups) > group_index + 1:
+                keyboard.insert(kb.nextButton)
+            keyboard.add(kb.backButton)
+            keyboard.add(kb.mMenuButton)
+
+            text = f'<b>Choose {mk_type} to remove</b>:\nPage {group_index + 1}'
+
+            async with state.proxy() as data:
+                data['group_index'] = group_index
+        else:
+            text = 'No next data. It\'s an error. Send nudes to the developer!'
+            keyboard = kb.cancelKeyboard
+
+        await bot.edit_message_text(text,
+                                    callback_query.from_user.id, callback_query.message.message_id,
+                                    reply_markup=keyboard)
+        return
+    # Show previous
+    elif callback_query.data == 'prev':
+        async with state.proxy() as data:
+            elements_groups = data['elements_groups']
+            group_index = data['group_index']
+            mk_type = data['mk_type']
+        if group_index - 1 >= 0:
+            group_index -= 1
+            keyboard = InlineKeyboardMarkup()
+            for el in elements_groups[group_index]:
+                button_text = f'{el[0]} ({el[2]})'
+                cb_data = '|'.join((el[0], str(el[1]), el[2]))
+                keyboard.add(InlineKeyboardButton(button_text, callback_data=cb_data))
+
+            if group_index - 1 >= 0:
+                keyboard.add(kb.prevButton)
+            keyboard.insert(kb.nextButton)
+            keyboard.add(kb.backButton)
+            keyboard.add(kb.mMenuButton)
+
+            text = f'<b>Choose {mk_type} to remove</b>:\nPage {group_index + 1}'
+
+            async with state.proxy() as data:
+                data['group_index'] = group_index
+        else:
+            text = 'No prev data. It\'s an error. Send nudes to the developer!'
+            keyboard = kb.cancelKeyboard
+
+        await bot.edit_message_text(text,
+                                    callback_query.from_user.id, callback_query.message.message_id,
+                                    reply_markup=keyboard)
+        return
+
+    data_base.remove_element(callback_query.from_user.id, int(cb_data[1]))
+    if cb_data[2]:
+        text = f'<b>{cb_data[0]} ({cb_data[2]}) removed!</b>'
+    else:
+        text = f'<b>{cb_data[0]} removed!</b>'
+    await bot.edit_message_text(text,
                                 callback_query.from_user.id, callback_query.message.message_id,
                                 reply_markup=kb.gotKeyboard)
 
