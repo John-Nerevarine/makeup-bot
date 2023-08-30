@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 import keyboards as kb
 from main_menu import getBackData
 import data_base
-from create_bot import bot, dp, ColourStory, MainMenu, MAKEUPS
+from create_bot import bot, dp, ColourStory, MainMenu, MAKEUPS, MAKEUPS_WO_LIPS
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from random import choice
 
@@ -38,7 +38,7 @@ async def callback_random_colour_story(callback_query: types.CallbackQuery,
         cs_name = colour_story[0]
         makeup = data_base.get_makeup_from_colour_story(user_id=callback_query.from_user.id,
                                                         colour_story_id=colour_story[1])
-        elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS)
+        elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS_WO_LIPS)
 
         text = '\n'.join((f'Colour story: <i>{cs_name}</i>',
                           elements_text,
@@ -89,7 +89,7 @@ async def callback_colour_story_get(callback_query: types.CallbackQuery,
     makeup = data_base.get_makeup_from_colour_story(user_id=callback_query.from_user.id,
                                                     colour_story_id=colour_story_id)
 
-    elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS)
+    elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS_WO_LIPS)
 
     text = '\n'.join((f'Colour story: <i>{cs_name}</i>',
                       elements_text,

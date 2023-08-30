@@ -1,7 +1,7 @@
 import sqlite3 as sq
 import json
 from random import randint, choice
-from create_bot import MAKEUPS
+from create_bot import MAKEUPS, MAKEUPS_WO_LIPS
 
 
 def sqlStart():
@@ -166,7 +166,7 @@ def get_makeup_from_colour_story(user_id, colour_story_id):
                 (user_id, colour_story_id))
     colours = json.loads(cur.fetchone()[0])
 
-    for element_type in MAKEUPS:
+    for element_type in MAKEUPS_WO_LIPS:
         if element_type == 'eyeliner' and randint(0, 1):
             makeup[element_type] = 'Black'
             continue

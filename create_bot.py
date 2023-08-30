@@ -9,6 +9,7 @@ bot = Bot(token=TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot, storage=storage)
 
 MAKEUPS = ('eyeshadow', 'eyeliner', 'lipstick', 'lipliner', 'lipgloss', 'highlighter', 'blush')
+MAKEUPS_WO_LIPS = ('eyeshadow', 'eyeliner', 'highlighter', 'blush')
 MAIN_MENU_MESSAGE = '<b>Lizz Makeup Bot</b>\n\n== Main Menu =='
 
 
