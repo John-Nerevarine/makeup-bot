@@ -49,7 +49,6 @@ randomElementsKeyboard = InlineKeyboardMarkup()
 for button in random_elements_buttons:
     randomElementsKeyboard.add(button)
 
-randomElementsKeyboard.add(InlineKeyboardButton('Glitter', callback_data='glitter'))
 randomElementsKeyboard.add(backButton)
 
 # Main Menu Keyboard
@@ -83,7 +82,7 @@ for index, button in enumerate(settings_buttons):
     else:
         settingsKeyboard.add(button)
 
-settingsKeyboard.add(InlineKeyboardButton('Edit Pallet Priority', callback_data='edit_pallet'))
+settingsKeyboard.add(InlineKeyboardButton('Edit Palette Priority', callback_data='edit_palette'))
 settingsKeyboard.add(backButton)
 
 # Edit Keyboard

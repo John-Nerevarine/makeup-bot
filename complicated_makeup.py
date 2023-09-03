@@ -122,7 +122,6 @@ async def callback_eyeshadowing_choose(callback_query: types.CallbackQuery,
     eyeshadows = data_base.get_elements(callback_query.from_user.id, 'eyeshadow')
 
     if eyeshadows:
-        text = f'<b>Choose Eyeshadow</b>:'
         eyeshadows_groups = []
         while len(eyeshadows) > 30:
             eyeshadows_groups.append(eyeshadows[:30])
@@ -147,6 +146,7 @@ async def callback_eyeshadowing_choose(callback_query: types.CallbackQuery,
             data['eyeshadows_groups'] = eyeshadows_groups
             data['group_index'] = 0
 
+        text = f'<b>Choose Eyeshadow</b>:'
         await Eyeshadowing.start.set()
     else:
         text = f'There is no eyeshadows in database!'

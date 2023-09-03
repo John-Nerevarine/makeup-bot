@@ -181,7 +181,7 @@ def get_makeup_from_colour_story(user_id, colour_story_id):
             makeup[element_type] = 'Black'
             continue
 
-        if element_type == 'glitter' and randint(0, 1):
+        if element_type == 'glitter' and not randint(0, 3):
             makeup[element_type] = 'Use NO glitter'
             continue
 
@@ -353,15 +353,15 @@ def image_find_existence(user_id, name):
         return False
 
 
-def get_pallets(user_id):
+def get_palettes(user_id):
     cur.execute('SELECT DISTINCT collection FROM makeup_elements WHERE user_id = ?',
                 (user_id,))
     return cur.fetchall()
 
 
-def change_pallet_priority(user_id, pallet_name, new_priority):
+def change_palette_priority(user_id, palette_name, new_priority):
     cur.execute(f'UPDATE makeup_elements SET priority = ? WHERE user_id = ? AND collection = ?',
-                (new_priority, user_id, pallet_name))
+                (new_priority, user_id, palette_name))
     base.commit()
 
 
