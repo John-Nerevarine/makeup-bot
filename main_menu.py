@@ -24,7 +24,7 @@ async def commandStart(message: types.Message, state: FSMContext):
             data['backKeyboards'] = []
             data['message_id'] = m.message_id
     else:
-        m = await bot.send_message(message.from_user.id, '<b>==Access denied==</b>')
+        await bot.send_message(message.from_user.id, '<b>==Access denied==</b>')
         try:
             with open('unauthorized_access_log.txt', 'a') as file:
                 file.write(f'{datetime.datetime.now()} | {message.from_user.id}' +

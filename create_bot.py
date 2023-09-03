@@ -85,3 +85,8 @@ class Image(StatesGroup):
 class CollectionEdit(StatesGroup):
     start = State()
     enter_priority = State()
+
+
+class Eyeshadowing(StatesGroup):
+    start = State()
+    end = State()

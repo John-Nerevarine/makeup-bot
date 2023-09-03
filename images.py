@@ -4,7 +4,7 @@ from aiogram.utils.exceptions import MessageNotModified
 import keyboards as kb
 from main_menu import getBackData
 import data_base
-from create_bot import bot, dp, AddMakeup, AddColour, Settings, MainMenu, Image, MAKEUPS
+from create_bot import bot, dp, Settings, MainMenu, Image
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 

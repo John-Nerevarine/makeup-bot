@@ -146,6 +146,8 @@ def remove_colour_story(user_id, cs_id):
 
 
 def get_elements_by_priority(elements):
+    # input data: ((name, colours, priority, collection), ...)
+
     if not elements:
         return elements
     weights = []
@@ -361,3 +363,41 @@ def change_pallet_priority(user_id, pallet_name, new_priority):
     cur.execute(f'UPDATE makeup_elements SET priority = ? WHERE user_id = ? AND collection = ?',
                 (new_priority, user_id, pallet_name))
     base.commit()
+
+
+def eyeshadowing(user_id, eyeshadow_id):
+    cur.execute('SELECT name, colours, collection from makeup_elements WHERE id = ?',
+                (eyeshadow_id,))
+    raw_eyeshadow = cur.fetchone()
+    eyeshadow = {'name': raw_eyeshadow[0],
+                 'colours': json.loads(raw_eyeshadow[1]),
+                 'collection': raw_eyeshadow[2]}
+
+    cur.execute('SELECT id, name, colours FROM colour_stories WHERE user_id = ?',
+                (user_id,))
+    raw_colour_stories = cur.fetchall()
+    accepted_colour_stories = []
+    for cs in raw_colour_stories:
+        for colour in eyeshadow['colours']:
+            if colour in json.loads(cs[2]):
+                accepted_colour_stories.append(cs)
+                break
+    if not accepted_colour_stories:
+        return f'No accepted colour stories for {eyeshadow["name"]} ({eyeshadow["collection"]})!'
+
+    colour_story = choice(accepted_colour_stories)
+    makeup = get_makeup_from_colour_story(user_id, colour_story[0])
+
+    new_eyeshadows = makeup['eyeshadow'].split(', ')
+    print(new_eyeshadows)
+    if f'{eyeshadow["name"]} ({eyeshadow["collection"]})' not in new_eyeshadows:
+        new_eyeshadows[0] = f'{eyeshadow["name"]} ({eyeshadow["collection"]})'
+        makeup['eyeshadow'] = ', '.join(new_eyeshadows)
+
+    elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS_WO_LIPS)
+
+    text = '\n'.join((f'Eyeshadowing by {eyeshadow["name"]} ({eyeshadow["collection"]})',
+                      f'Colour story: <i>{colour_story[1]}</i>',
+                      elements_text))
+
+    return text

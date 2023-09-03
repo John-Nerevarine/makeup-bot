@@ -258,7 +258,7 @@ async def callback_blush(callback_query: types.CallbackQuery,
 # MASCARA
 @dp.callback_query_handler(text='mascara', state=MainMenu.elements)
 async def callback_mascara(callback_query: types.CallbackQuery,
-                            state: FSMContext):
+                           state: FSMContext):
     await getBackData(state, callback_query.message)
     mascaras = [element[0] for element in data_base.get_elements(callback_query.from_user.id, 'mascara')]
     if mascaras:

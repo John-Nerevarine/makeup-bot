@@ -56,6 +56,7 @@ randomElementsKeyboard.add(backButton)
 main_menu_buttons = (
     InlineKeyboardButton('Colour Story', callback_data='colour_story'),
     InlineKeyboardButton('Full Random', callback_data='full_random'),
+    InlineKeyboardButton('Eyeshadowing', callback_data='eyeshadowing'),
     InlineKeyboardButton('Random Element', callback_data='elements'),
     InlineKeyboardButton('Random Image', callback_data='images'),
     InlineKeyboardButton('Settings', callback_data='settings'))
@@ -77,10 +78,11 @@ settings_buttons = (
 
 settingsKeyboard = InlineKeyboardMarkup()
 for index, button in enumerate(settings_buttons):
-    if index % 2 == 0:
-        settingsKeyboard.add(button)
-    else:
+    if index % 2:
         settingsKeyboard.insert(button)
+    else:
+        settingsKeyboard.add(button)
+
 settingsKeyboard.add(InlineKeyboardButton('Edit Pallet Priority', callback_data='edit_pallet'))
 settingsKeyboard.add(backButton)
 
