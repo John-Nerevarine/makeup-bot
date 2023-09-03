@@ -5,7 +5,7 @@ import keyboards as kb
 import json
 from main_menu import getBackData
 import data_base
-from create_bot import bot, dp, Edit, Settings, MAKEUPS
+from create_bot import bot, dp, Edit, Settings, CollectionEdit, MAKEUPS
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
@@ -70,7 +70,7 @@ async def callback_edit_choose_name(callback_query: types.CallbackQuery,
                                 reply_markup=keyboard)
 
 
-# EDIT MENU
+# EDIT MENU / NEXT-PREV
 @dp.callback_query_handler(state=Edit.chose_makeup)
 async def callback_edit_menu(callback_query: types.CallbackQuery,
                              state: FSMContext):
@@ -439,3 +439,167 @@ async def massage_edit_name(message: types.Message,
                                 reply_markup=kb.editKeyboard)
 
     await Edit.edit.set()
+
+
+# CHOOSE COLLECTION
+@dp.callback_query_handler(text='edit_pallet', state=Settings.start)
+async def callback_edit_pallet_choose(callback_query: types.CallbackQuery,
+                                      state: FSMContext):
+    await getBackData(state, callback_query.message)
+    await bot.answer_callback_query(callback_query.id)
+
+    collections = data_base.get_pallets(callback_query.from_user.id)
+
+    if collections:
+        text = f'<b>Choose Pallet</b>:'
+        pallets_groups = []
+        while len(collections) > 30:
+            pallets_groups.append(collections[:30])
+            collections = collections[30:]
+        else:
+            pallets_groups.append(collections)
+
+        keyboard = InlineKeyboardMarkup()
+        for pallet in pallets_groups[0]:
+            if pallet[0]:
+                keyboard.add(InlineKeyboardButton(pallet[0], callback_data=pallet[0]))
+
+        if len(pallets_groups) > 1:
+            keyboard.add(kb.nextButton)
+        keyboard.add(kb.backButton)
+        keyboard.add(kb.mMenuButton)
+
+        async with state.proxy() as data:
+            data['pallets_groups'] = pallets_groups
+            data['group_index'] = 0
+
+        await CollectionEdit.start.set()
+
+    else:
+        text = f'<b>NO Pallets</b> in the database!'
+        keyboard = kb.cancelKeyboard
+
+    await bot.edit_message_text(text,
+                                callback_query.from_user.id, callback_query.message.message_id,
+                                reply_markup=keyboard)
+
+
+# ENTER PRIORITY / NEXT-PREV
+@dp.callback_query_handler(state=CollectionEdit.start)
+async def callback_edit_pallet_enter_priority(callback_query: types.CallbackQuery,
+                                              state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
+    # Show next
+    if callback_query.data == 'next':
+        async with state.proxy() as data:
+            pallets_groups = data['pallets_groups']
+            group_index = data['group_index']
+        if len(pallets_groups) > group_index + 1:
+            group_index += 1
+
+            keyboard = InlineKeyboardMarkup()
+            for pallet in pallets_groups[group_index]:
+                if pallet[0]:
+                    keyboard.add(InlineKeyboardButton(pallet[0], callback_data=pallet[0]))
+
+            keyboard.add(kb.prevButton)
+            if len(pallets_groups) > group_index + 1:
+                keyboard.insert(kb.nextButton)
+            keyboard.add(kb.backButton)
+            keyboard.add(kb.mMenuButton)
+
+            text = f'<b>Choose Pallet</b>:\nPage {group_index + 1}'
+
+            async with state.proxy() as data:
+                data['group_index'] = group_index
+        else:
+            text = 'No next data. It\'s an error. Send nudes to the developer!'
+            keyboard = kb.cancelKeyboard
+
+        await bot.edit_message_text(text,
+                                    callback_query.from_user.id, callback_query.message.message_id,
+                                    reply_markup=keyboard)
+        return
+    # Show previous
+    elif callback_query.data == 'prev':
+        async with state.proxy() as data:
+            pallets_groups = data['pallets_groups']
+            group_index = data['group_index']
+        if group_index - 1 >= 0:
+            group_index -= 1
+            keyboard = InlineKeyboardMarkup()
+            for pallet in pallets_groups[group_index]:
+                keyboard.add(InlineKeyboardButton(pallet[0], callback_data=pallet[0]))
+
+            if group_index - 1 >= 0:
+                keyboard.add(kb.prevButton)
+                keyboard.insert(kb.nextButton)
+            else:
+                keyboard.add(kb.nextButton)
+            keyboard.add(kb.backButton)
+            keyboard.add(kb.mMenuButton)
+
+            text = f'<b>Choose Pallet</b>:\nPage {group_index + 1}'
+
+            async with state.proxy() as data:
+                data['group_index'] = group_index
+        else:
+            text = 'No prev data. It\'s an error. Send nudes to the developer!'
+            keyboard = kb.cancelKeyboard
+
+        await bot.edit_message_text(text,
+                                    callback_query.from_user.id, callback_query.message.message_id,
+                                    reply_markup=keyboard)
+        return
+    pallet = callback_query.data
+    text = f'Enter new priority for <b>{pallet}</b>:'
+
+    m = await bot.edit_message_text(text,
+                                    callback_query.from_user.id, callback_query.message.message_id,
+                                    reply_markup=kb.backKeyboard)
+
+    async with state.proxy() as data:
+        data['pallet'] = pallet
+        data['message_id'] = m.message_id
+
+    await CollectionEdit.enter_priority.set()
+
+
+# COLLECTION PRIORITY CHANGED
+@dp.message_handler(state=CollectionEdit.enter_priority)
+async def massage_collection_edit_priority(message: types.Message,
+                                           state: FSMContext):
+    if message.text.isdigit() and 0 <= int(message.text) <= 10:
+        priority = int(message.text)
+    else:
+        async with state.proxy() as data:
+            pallet = data['pallet']
+            message_id = data['message_id']
+
+        text = '\n'.join((f'Enter new priority for <b>"{pallet}:"</b>',
+                          'Enter number between 0 and 10!',))
+
+        await bot.delete_message(message.from_user.id, message.message_id)
+        try:
+            await bot.edit_message_text(text,
+                                        message.from_user.id, message_id,
+                                        reply_markup=kb.cancelKeyboard)
+        except MessageNotModified:
+            text += '!'
+            await bot.edit_message_text(text,
+                                        message.from_user.id, message_id,
+                                        reply_markup=kb.cancelKeyboard)
+        return
+
+    async with state.proxy() as data:
+        pallet = data['pallet']
+        message_id = data['message_id']
+
+    data_base.change_pallet_priority(message.from_user.id, pallet, priority)
+
+    text = f'Priority for <b>{pallet}</b> changed to <b>{priority}</b>!'
+
+    await bot.delete_message(message.from_user.id, message.message_id)
+    await bot.edit_message_text(text,
+                                message.from_user.id, message_id,
+                                reply_markup=kb.backKeyboard)

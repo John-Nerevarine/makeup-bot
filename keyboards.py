@@ -72,11 +72,16 @@ settings_buttons = (
     InlineKeyboardButton('Add Makeup', callback_data='add_makeup'),
     InlineKeyboardButton('Remove Makeup', callback_data='remove_makeup'),
     InlineKeyboardButton('Add Image', callback_data='add_image'),
-    InlineKeyboardButton('Remove Image', callback_data='remove_image'))
+    InlineKeyboardButton('Remove Image', callback_data='remove_image')
+    )
 
 settingsKeyboard = InlineKeyboardMarkup()
-for button in settings_buttons:
-    settingsKeyboard.add(button)
+for index, button in enumerate(settings_buttons):
+    if index % 2 == 0:
+        settingsKeyboard.add(button)
+    else:
+        settingsKeyboard.insert(button)
+settingsKeyboard.add(InlineKeyboardButton('Edit Pallet Priority', callback_data='edit_pallet'))
 settingsKeyboard.add(backButton)
 
 # Edit Keyboard

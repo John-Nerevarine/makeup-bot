@@ -80,3 +80,8 @@ class Image(StatesGroup):
     send = State()
     enter_name = State()
     delete = State()
+
+
+class CollectionEdit(StatesGroup):
+    start = State()
+    enter_priority = State()

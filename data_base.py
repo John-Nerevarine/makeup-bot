@@ -336,3 +336,15 @@ def image_find_existence(user_id, name):
         return True
     else:
         return False
+
+
+def get_pallets(user_id):
+    cur.execute('SELECT DISTINCT collection FROM makeup_elements WHERE user_id = ?',
+                (user_id,))
+    return cur.fetchall()
+
+
+def change_pallet_priority(user_id, pallet_name, new_priority):
+    cur.execute(f'UPDATE makeup_elements SET priority = ? WHERE user_id = ? AND collection = ?',
+                (new_priority, user_id, pallet_name))
+    base.commit()
