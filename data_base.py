@@ -179,6 +179,10 @@ def get_makeup_from_colour_story(user_id, colour_story_id):
             makeup[element_type] = 'Black'
             continue
 
+        if element_type == 'glitter' and randint(0, 1):
+            makeup[element_type] = 'Use NO glitter'
+            continue
+
         cur.execute('SELECT name, colours, priority, collection FROM makeup_elements WHERE user_id = ? AND type = ?',
                     (user_id, element_type))
         all_elements = cur.fetchall()
@@ -188,9 +192,9 @@ def get_makeup_from_colour_story(user_id, colour_story_id):
                 if colour in colours:
                     elements_to_use.append(current_element)
                     break
-        ########
+
         elements_to_use = get_elements_by_priority(elements_to_use)
-        ########
+
         if elements_to_use:
             if element_type == 'eyeshadow' or element_type == 'eyeliner':
                 amount = randint(1, 3)
@@ -210,9 +214,11 @@ def get_makeup_from_colour_story(user_id, colour_story_id):
                 curr_makeup_text = f'{curr_makeup[0]} ({curr_makeup[3]})' if curr_makeup[3] else curr_makeup[0]
                 makeup[element_type] = curr_makeup_text
         else:
-            makeup[element_type] = f'No <b>{element_type}</b> in database!'
+            if element_type == 'glitter':
+                makeup[element_type] = 'Use NO glitter'
+            else:
+                makeup[element_type] = f'No <b>{element_type}</b> in database!'
 
-    makeup['glitter'] = bool(randint(0, 1))
     return makeup
 
     # return {'eyeshadow': 'some eyeshadow',
@@ -222,7 +228,8 @@ def get_makeup_from_colour_story(user_id, colour_story_id):
     #         'lipgloss': 'some lipgloss',
     #         'highlighter': 'some ---',
     #         'blush': 'some ---',
-    #         'glitter': True}
+    #         'glitter': 'some ---',
+    #         'mascara': 'some ---'}
 
 
 def get_full_random(user_id):
@@ -231,6 +238,10 @@ def get_full_random(user_id):
     for element_type in MAKEUPS:
         if element_type == 'eyeliner' and randint(0, 1):
             makeup[element_type] = 'Black'
+            continue
+
+        if element_type == 'glitter' and randint(0, 1):
+            makeup[element_type] = 'Use NO glitter'
             continue
 
         cur.execute('SELECT name, collection FROM makeup_elements WHERE user_id = ? AND type = ?',
@@ -255,9 +266,11 @@ def get_full_random(user_id):
                 curr_makeup_text = f'{curr_makeup[0]} ({curr_makeup[1]})' if curr_makeup[1] else curr_makeup[0]
                 makeup[element_type] = curr_makeup_text
         else:
-            makeup[element_type] = f'No <b>{element_type}</b> in database!'
+            if element_type == 'glitter':
+                makeup[element_type] = 'Use NO glitter'
+            else:
+                makeup[element_type] = f'No <b>{element_type}</b> in database!'
 
-    makeup['glitter'] = bool(randint(0, 1))
     return makeup
 
 

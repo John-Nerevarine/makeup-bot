@@ -40,10 +40,7 @@ async def callback_random_colour_story(callback_query: types.CallbackQuery,
                                                         colour_story_id=colour_story[1])
         elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS_WO_LIPS)
 
-        text = '\n'.join((f'Colour story: <i>{cs_name}</i>',
-                          elements_text,
-                          f'Glitter: <b>{"Yes" if makeup["glitter"] else "No"}</b>',
-                          ))
+        text = '\n'.join((f'Colour story: <i>{cs_name}</i>', elements_text))
 
         await bot.edit_message_text(text,
                                     callback_query.from_user.id, callback_query.message.message_id,
@@ -91,10 +88,7 @@ async def callback_colour_story_get(callback_query: types.CallbackQuery,
 
     elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS_WO_LIPS)
 
-    text = '\n'.join((f'Colour story: <i>{cs_name}</i>',
-                      elements_text,
-                      f'Glitter: <b>{"Yes" if makeup["glitter"] else "No"}</b>',
-                      ))
+    text = '\n'.join((f'Colour story: <i>{cs_name}</i>', elements_text))
 
     await bot.edit_message_text(text,
                                 callback_query.from_user.id, callback_query.message.message_id,
@@ -111,10 +105,7 @@ async def callback_full_random(callback_query: types.CallbackQuery,
 
     elements_text = '\n'.join(f'{mkp.capitalize()}: <b>{makeup[mkp]}</b>' for mkp in MAKEUPS)
 
-    text = '\n'.join((f'Full random:',
-                      elements_text,
-                      f'Glitter: <b>{"Yes" if makeup["glitter"] else "No"}</b>',
-                      ))
+    text = '\n'.join((f'Full random:', elements_text))
 
     await bot.edit_message_text(text,
                                 callback_query.from_user.id, callback_query.message.message_id,

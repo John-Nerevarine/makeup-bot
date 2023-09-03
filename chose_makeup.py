@@ -197,10 +197,18 @@ async def callback_lipgloss(callback_query: types.CallbackQuery,
 async def callback_glitter(callback_query: types.CallbackQuery,
                            state: FSMContext):
     await getBackData(state, callback_query.message)
-    await bot.answer_callback_query(callback_query.id)
 
-    decision = bool(randint(0, 1))
-    text = '<b>USE</b> glitter.' if decision else 'Use <b>NO</b> glitter.'
+    glitters = [element[0] for element in data_base.get_elements(callback_query.from_user.id, 'glitter')]
+    if glitters:
+        item = str(choice(glitters))
+        text = f'Glitter to use:\n\n<b>{item}</b>.'
+    else:
+        text = f'No Glitters in Database!'
+
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(text,
+                                callback_query.from_user.id, callback_query.message.message_id,
+                                reply_markup=kb.backKeyboard)
 
     await bot.edit_message_text(text,
                                 callback_query.from_user.id, callback_query.message.message_id,
@@ -240,6 +248,24 @@ async def callback_blush(callback_query: types.CallbackQuery,
         text = f'Blush to use:\n\n<b>{item}</b>.'
     else:
         text = f'No blushes in Database!'
+
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(text,
+                                callback_query.from_user.id, callback_query.message.message_id,
+                                reply_markup=kb.backKeyboard)
+
+
+# MASCARA
+@dp.callback_query_handler(text='mascara', state=MainMenu.elements)
+async def callback_mascara(callback_query: types.CallbackQuery,
+                            state: FSMContext):
+    await getBackData(state, callback_query.message)
+    mascaras = [element[0] for element in data_base.get_elements(callback_query.from_user.id, 'mascara')]
+    if mascaras:
+        item = str(choice(mascaras))
+        text = f'Mascara to use:\n\n<b>{item}</b>.'
+    else:
+        text = f'No Mascaras in Database!'
 
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(text,
