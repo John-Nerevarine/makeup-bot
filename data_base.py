@@ -34,6 +34,13 @@ def sqlStart():
                                                     colours TEXT
                                                     )''')
 
+        base.execute('''CREATE TABLE IF NOT EXISTS images(
+                                                           id INTEGER PRIMARY KEY,
+                                                           user_id INTEGER,
+                                                           telegram_id INTEGER,
+                                                           name TEXT
+                                                           )''')
+
     base.commit()
 
 
@@ -283,6 +290,48 @@ def find_existence(user_id, full_name):
         collection = None
     cur.execute('SELECT id FROM makeup_elements WHERE user_id = ? AND name = ? AND collection = ?',
                 (user_id, name, collection))
+    if cur.fetchone():
+        return True
+    else:
+        return False
+
+
+def add_image(user_id, name, telegram_id):
+    cur.execute('''INSERT INTO images (user_id, name, telegram_id)
+            VALUES(?, ?, ?)''', (user_id, name, telegram_id))
+    base.commit()
+
+
+def get_random_image(user_id):
+    cur.execute('SELECT id, name, telegram_id FROM images WHERE user_id = ?',
+                (user_id,))
+
+    images = cur.fetchall()
+    if images:
+        image = choice(images)
+        return {'id': image[0],
+                'name': image[1],
+                'telegram_id': image[2]
+                }
+    else:
+        return None
+
+
+def get_all_images_names(user_id, ):
+    cur.execute('SELECT id, name FROM images WHERE user_id = ?',
+                (user_id,))
+    return cur.fetchall()
+
+
+def remove_image(image_id):
+    cur.execute('''DELETE FROM images WHERE id = ?''',
+                (image_id,))
+    base.commit()
+
+
+def image_find_existence(user_id, name):
+    cur.execute('SELECT id FROM images WHERE user_id = ? AND name = ?',
+                (user_id, name))
     if cur.fetchone():
         return True
     else:

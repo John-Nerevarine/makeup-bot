@@ -73,3 +73,10 @@ class Edit(StatesGroup):
     additional_colour = State()
     type = State()
     priority = State()
+
+
+class Image(StatesGroup):
+    show_image = State()
+    send = State()
+    enter_name = State()
+    delete = State()

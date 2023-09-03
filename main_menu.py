@@ -68,6 +68,11 @@ async def callbackGoBack(callback_query: types.CallbackQuery,
             await bot.edit_message_text(data['backTexts'][-1],
                                         callback_query.from_user.id, callback_query.message.message_id,
                                         reply_markup=data['backKeyboards'][-1])
+
+            if data.get('image_message_id'):
+                await bot.delete_message(callback_query.from_user.id, data['image_message_id'])
+                data['image_message_id'] = None
+
             if data['backStates'][-1] == 'MainMenu:start':
                 await state.finish()
                 await MainMenu.start.set()

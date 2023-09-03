@@ -33,6 +33,11 @@ async def commandDeleteMessage(message: types.Message, state: FSMContext):
     await bot.delete_message(message.from_user.id, message.message_id)
 
 
+async def commandDeletePhoto(message: types.Message, state: FSMContext):
+    await bot.delete_message(message.from_user.id, message.message_id)
+
+
 def registerHandlers(dp: Dispatcher):
     dp.register_callback_query_handler(callbackEmergencyStart, lambda c: True, state='*')
     dp.register_message_handler(commandDeleteMessage, state='*')
+    dp.register_message_handler(commandDeletePhoto, state='*', content_types=(types.ContentType.PHOTO, types.ContentType.DOCUMENT))
