@@ -44,11 +44,44 @@ def sqlStart():
     base.commit()
 
 
-def get_elements(user_id, element):
-    cur.execute('SELECT name, id, collection FROM makeup_elements WHERE user_id = ? AND type = ?',
+def get_elements(user_id, element, amount='all'):
+    cur.execute('SELECT name, id, collection, priority FROM makeup_elements WHERE user_id = ? AND type = ?',
                 (user_id, element))
-    elements = cur.fetchall()
-    return elements
+
+    if amount == 'all':
+        return cur.fetchall()
+
+    elements = list(cur.fetchall())
+    if not elements:
+        return elements
+
+    new_elements = []
+    while len(new_elements) < amount:
+        if not elements:
+            return new_elements
+
+        weights = []
+        for el in elements:
+            if el[3] not in weights:
+                weights.append(el[3])
+
+        element_added = False
+        while not element_added:
+            cur_weight = max(weights)
+            dice = randint(1, 10)
+            if dice <= cur_weight:
+                element_to_add = choice([elem for elem in elements if elem[3] == cur_weight])
+                new_elements.append(element_to_add)
+                elements.remove(element_to_add)
+                element_added = True
+            else:
+                weights.remove(cur_weight)
+                if not weights:
+                    element_to_add = choice(elements)
+                    new_elements.append(element_to_add)
+                    elements.remove(element_to_add)
+                    element_added = True
+    return new_elements
 
 
 def get_one_element(user_id, element_id):

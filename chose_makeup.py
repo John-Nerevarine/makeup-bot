@@ -45,19 +45,16 @@ async def callback_choose_eyeshadow(callback_query: types.CallbackQuery,
 async def callback_amount_eyeshadow(callback_query: types.CallbackQuery,
                                     state: FSMContext):
     amount = int(callback_query.data)
+    eyeshadows_raw = data_base.get_elements(callback_query.from_user.id, 'eyeshadow', amount=amount)
     eyeshadows = [f'{element[0]} ({element[2]})' if element[2] else element[0]
-                  for element in data_base.get_elements(callback_query.from_user.id, 'eyeshadow')]
+                  for element in eyeshadows_raw]
     if not eyeshadows:
         text = f'There is no eyeshadows in database!'
     elif len(eyeshadows) < amount:
         items = ', '.join([i for i in eyeshadows])
         text = f'Not enough eyeshadows in database! Got all of them:\n<b>{items}</b>.'
     else:
-        items = ''
-        for i in range(amount):
-            curr_item = choice(eyeshadows)
-            eyeshadows.remove(curr_item)
-            items = ', '.join((items, curr_item)) if items else curr_item
+        items = ', '.join([i for i in eyeshadows])
         text = f'Eyeshadows to use:\n\n<b>{items}</b>.'
 
     await bot.answer_callback_query(callback_query.id)
@@ -117,19 +114,16 @@ async def callback_choose_colour_eyeliner(callback_query: types.CallbackQuery,
 async def callback_amount_eyeliner(callback_query: types.CallbackQuery,
                                    state: FSMContext):
     amount = int(callback_query.data)
+    eyeliners_raw = data_base.get_elements(callback_query.from_user.id, 'eyeliner', amount=amount)
     eyeliners = [f'{element[0]} ({element[2]})' if element[2] else element[0]
-                 for element in data_base.get_elements(callback_query.from_user.id, 'eyeliner')]
+                 for element in eyeliners_raw]
     if not eyeliners:
         text = f'There is no eyeliners in database!'
     elif len(eyeliners) < amount:
         items = ', '.join([i for i in eyeliners])
         text = f'Not enough eyeliners in database! Got all of them:\n<b>{items}</b>.'
     else:
-        items = ''
-        for i in range(amount):
-            curr_item = choice(eyeliners)
-            eyeliners.remove(curr_item)
-            items = ', '.join((items, curr_item)) if items else curr_item
+        items = ', '.join([i for i in eyeliners])
         text = f'Eyeliners to use:\n\n<b>{items}</b>.'
 
     await bot.answer_callback_query(callback_query.id)
@@ -144,14 +138,12 @@ async def callback_lipsticks(callback_query: types.CallbackQuery,
                              state: FSMContext):
     await getBackData(state, callback_query.message)
     lipsticks = [f'{element[0]} ({element[2]})' if element[2] else element[0]
-                 for element in data_base.get_elements(callback_query.from_user.id, 'lipstick')]
+                 for element in data_base.get_elements(callback_query.from_user.id, 'lipstick', amount=1)]
     if not lipsticks:
         text = f'There is no lipsticks in data base!'
-    elif lipsticks:
-        item = str(choice(lipsticks))
-        text = f'Lipstick to use:\n\n<b>{item}</b>.'
     else:
-        text = f'No lipsticks in Database!'
+        item = str(lipsticks[0])
+        text = f'Lipstick to use:\n\n<b>{item}</b>.'
 
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(text,
@@ -165,9 +157,9 @@ async def callback_lipliner(callback_query: types.CallbackQuery,
                             state: FSMContext):
     await getBackData(state, callback_query.message)
     lipliners = [f'{element[0]} ({element[2]})' if element[2] else element[0]
-                 for element in data_base.get_elements(callback_query.from_user.id, 'lipliner')]
+                 for element in data_base.get_elements(callback_query.from_user.id, 'lipliner', amount=1)]
     if lipliners:
-        item = str(choice(lipliners))
+        item = str(lipliners[0])
         text = f'Lipliner to use:\n\n<b>{item}</b>.'
     else:
         text = f'No lipliners in Database!'
@@ -184,9 +176,9 @@ async def callback_lipgloss(callback_query: types.CallbackQuery,
                             state: FSMContext):
     await getBackData(state, callback_query.message)
     lipglosses = [f'{element[0]} ({element[2]})' if element[2] else element[0]
-                  for element in data_base.get_elements(callback_query.from_user.id, 'lipgloss')]
+                  for element in data_base.get_elements(callback_query.from_user.id, 'lipgloss', amount=1)]
     if lipglosses:
-        item = str(choice(lipglosses))
+        item = str(lipglosses[0])
         text = f'Lipgloss to use:\n\n<b>{item}</b>.'
     else:
         text = f'No lipglosses in Database!'
@@ -204,9 +196,9 @@ async def callback_glitter(callback_query: types.CallbackQuery,
     await getBackData(state, callback_query.message)
 
     glitters = [f'{element[0]} ({element[2]})' if element[2] else element[0]
-                for element in data_base.get_elements(callback_query.from_user.id, 'glitter')]
+                for element in data_base.get_elements(callback_query.from_user.id, 'glitter', amount=1)]
     if glitters:
-        item = str(choice(glitters))
+        item = str(glitters[0])
         text = f'Glitter to use:\n\n<b>{item}</b>.'
     else:
         text = f'No Glitters in Database!'
@@ -227,14 +219,12 @@ async def callback_highlighter(callback_query: types.CallbackQuery,
                                state: FSMContext):
     await getBackData(state, callback_query.message)
     highlighters = [f'{element[0]} ({element[2]})' if element[2] else element[0]
-                    for element in data_base.get_elements(callback_query.from_user.id, 'highlighter')]
+                    for element in data_base.get_elements(callback_query.from_user.id, 'highlighter', amount=1)]
     if not highlighters:
         text = f'There is no highlighters in data base!'
-    elif highlighters:
-        item = str(choice(highlighters))
-        text = f'Highlighter to use:\n\n<b>{item}</b>.'
     else:
-        text = f'No highlighters in Database!'
+        item = str(highlighters[0])
+        text = f'Highlighter to use:\n\n<b>{item}</b>.'
 
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(text,
@@ -248,14 +238,12 @@ async def callback_blush(callback_query: types.CallbackQuery,
                          state: FSMContext):
     await getBackData(state, callback_query.message)
     blushes = [f'{element[0]} ({element[2]})' if element[2] else element[0]
-               for element in data_base.get_elements(callback_query.from_user.id, 'blush')]
+               for element in data_base.get_elements(callback_query.from_user.id, 'blush', amount=1)]
     if not blushes:
         text = f'There is no blushes in data base!'
-    elif blushes:
-        item = str(choice(blushes))
-        text = f'Blush to use:\n\n<b>{item}</b>.'
     else:
-        text = f'No blushes in Database!'
+        item = str(blushes[0])
+        text = f'Blush to use:\n\n<b>{item}</b>.'
 
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(text,
@@ -269,9 +257,9 @@ async def callback_mascara(callback_query: types.CallbackQuery,
                            state: FSMContext):
     await getBackData(state, callback_query.message)
     mascaras = [f'{element[0]} ({element[2]})' if element[2] else element[0]
-                for element in data_base.get_elements(callback_query.from_user.id, 'mascara')]
+                for element in data_base.get_elements(callback_query.from_user.id, 'mascara', amount=1)]
     if mascaras:
-        item = str(choice(mascaras))
+        item = str(mascaras[0])
         text = f'Mascara to use:\n\n<b>{item}</b>.'
     else:
         text = f'No Mascaras in Database!'

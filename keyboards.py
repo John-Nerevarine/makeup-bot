@@ -53,10 +53,10 @@ randomElementsKeyboard.add(backButton)
 
 # Main Menu Keyboard
 main_menu_buttons = (
+    InlineKeyboardButton('Random Element', callback_data='elements'),
     InlineKeyboardButton('Colour Story', callback_data='colour_story'),
     InlineKeyboardButton('Full Random', callback_data='full_random'),
     InlineKeyboardButton('Eyeshadowing', callback_data='eyeshadowing'),
-    InlineKeyboardButton('Random Element', callback_data='elements'),
     InlineKeyboardButton('Random Image', callback_data='images'),
     InlineKeyboardButton('Settings', callback_data='settings'))
 
