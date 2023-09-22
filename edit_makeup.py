@@ -444,11 +444,13 @@ async def massage_edit_name(message: types.Message,
 # CHOOSE COLLECTION
 @dp.callback_query_handler(text='edit_palette', state=Settings.start)
 async def callback_edit_palette_choose(callback_query: types.CallbackQuery,
-                                      state: FSMContext):
+                                       state: FSMContext):
     await getBackData(state, callback_query.message)
     await bot.answer_callback_query(callback_query.id)
 
-    collections = data_base.get_palettes(callback_query.from_user.id)
+    collections = list(data_base.get_palettes(callback_query.from_user.id))
+    collections = [i for i in collections if i[0]]
+    collections.sort()
 
     if collections:
         text = f'<b>Choose Palette</b>:'
@@ -461,8 +463,7 @@ async def callback_edit_palette_choose(callback_query: types.CallbackQuery,
 
         keyboard = InlineKeyboardMarkup()
         for palette in palettes_groups[0]:
-            if palette[0]:
-                keyboard.add(InlineKeyboardButton(palette[0], callback_data=palette[0]))
+            keyboard.add(InlineKeyboardButton(palette[0], callback_data=palette[0]))
 
         if len(palettes_groups) > 1:
             keyboard.add(kb.nextButton)
@@ -487,7 +488,7 @@ async def callback_edit_palette_choose(callback_query: types.CallbackQuery,
 # ENTER PRIORITY / NEXT-PREV
 @dp.callback_query_handler(state=CollectionEdit.start)
 async def callback_edit_palette_enter_priority(callback_query: types.CallbackQuery,
-                                              state: FSMContext):
+                                               state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
     # Show next
     if callback_query.data == 'next':
