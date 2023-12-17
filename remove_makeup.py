@@ -48,7 +48,7 @@ async def callback_remove_makeup(callback_query: types.CallbackQuery,
         keyboard = InlineKeyboardMarkup()
         for el in elements_groups[0]:
             button_text = f'{el[0]} ({el[2]})'
-            cb_data = '|'.join((el[0], str(el[1]), el[2]))
+            cb_data = '|'.join((el[0], str(el[1]), str(el[2])))
             keyboard.add(InlineKeyboardButton(button_text, callback_data=cb_data))
 
         if len(elements_groups) > 1:
